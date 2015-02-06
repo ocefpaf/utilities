@@ -155,7 +155,7 @@ LAND = NaturalEarthFeature('physical', 'land', '10m', edgecolor='face',
                            facecolor=COLORS['land'])
 
 rootpath = os.path.split(__file__)[0]
-df = read_csv(os.path.join(rootpath, 'climatology_data_sources.csv'))
+df = read_csv(os.path.join(rootpath, 'data', 'climatology_data_sources.csv'))
 
 
 def make_map(bbox, **kw):
