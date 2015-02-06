@@ -1,0 +1,4 @@
+include *.md
+
+recursive-include utilities *.py
+recursive-include utilities/data climatology_data_sources.csv
