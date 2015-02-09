@@ -33,7 +33,7 @@ long_description = '{}\n'.format(read('README.md'))
 requires = ['iris', 'oceans', 'lxml', 'pandas', 'beautifulsoup4']
 # Soft library dependencies:
 recommended = dict(full=["ipython-notebook", "pyugrid", "folium"])
-# pip install 'oceans[full]'
+# pip install 'utilities[full]'
 
 
 config = dict(name='utilities',
