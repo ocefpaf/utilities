@@ -29,6 +29,13 @@ LICENSE = read('LICENSE.txt')
 version = find_version('utilities', '__init__.py')
 long_description = '{}\n'.format(read('README.md'))
 
+# Hard library dependencies:
+requires = ['iris', 'oceans', 'lxml', 'pandas', 'beautifulsoup4']
+# Soft library dependencies:
+recommended = dict(full=["ipython-notebook", "pyugrid", "folium"])
+# pip install 'utilities[full]'
+
+
 config = dict(name='utilities',
               version=version,
               description='Misc utilities functions for SECOORA',
@@ -44,6 +51,8 @@ config = dict(name='utilities',
                            'License :: OSI Approved :: MIT License'],
               packages=['utilities'],
               package_data=pkg_data,
+              install_requires=requires,
+              extras_require=recommended,
               zip_safe=False)
 
 setup(**config)
