@@ -7,7 +7,7 @@
 # e-mail:   ocefpaf@gmail
 # web:      http://ocefpaf.github.io/
 # created:  04-Feb-2015
-# modified: Fri 06 Feb 2015 10:09:21 AM BRT
+# modified: Mon 09 Feb 2015 03:18:46 PM BRT
 #
 # obs:
 #
@@ -26,11 +26,10 @@ from iris.cube import CubeList
 from iris.pandas import as_cube
 from iris.exceptions import CoordinateNotFoundError, CoordinateMultiDimError
 
+from oceans import wrap_lon180
+
 iris.FUTURE.netcdf_promote = True
 iris.FUTURE.cell_datetime_objects = True
-
-from pyugrid import UGrid
-from oceans import wrap_lon180
 
 
 __all__ = ['z_coord',
@@ -125,8 +124,11 @@ def time_slice(cube, start, stop=None):
 
 def time_constraint(cube, start, stop):
     """Slice time by constraint."""
-    begin = lambda cell: cell >= start
-    end = lambda cell: cell <= stop
+    def begin(cell):
+        return cell >= start
+
+    def end(cell):
+        return cell <= stop
     constraint = Constraint(begin & end)
     return cube.extract(constraint)
 
@@ -190,7 +192,8 @@ def subset(cube, bbox):
     return cube
 
 
-filter_list = lambda lista: [x for x in lista if x is not None]
+def filter_list(lista):
+    return [x for x in lista if x is not None]
 
 
 def get_cubes(url, name_list, bbox=None, time=None, units=None, callback=None,
@@ -205,7 +208,8 @@ def get_cubes(url, name_list, bbox=None, time=None, units=None, callback=None,
 
     cubes = iris.load_raw(url, callback=callback)
 
-    in_list = lambda cube: cube.standard_name in name_list
+    def in_list(cube):
+        return cube.standard_name in name_list
     cubes = CubeList([cube for cube in cubes if in_list(cube)])
 
     cubes = filter_list(cubes)
@@ -239,6 +243,7 @@ def get_cubes(url, name_list, bbox=None, time=None, units=None, callback=None,
 
 def add_mesh(cube, url):
     """Soon in an iris near you!"""
+    from pyugrid import UGrid
     ug = UGrid.from_ncfile(url)
     cube.mesh = ug
     cube.mesh_dimension = 1

@@ -13,15 +13,12 @@ from pandas import read_csv
 from netCDF4 import Dataset, date2index, num2date
 
 import iris
-
-iris.FUTURE.netcdf_promote = True
-iris.FUTURE.cell_datetime_objects = True
-
 from cartopy.feature import NaturalEarthFeature, COLORS
 
 import lxml.html
-from folium.folium import Map
-from IPython.display import HTML, IFrame
+
+iris.FUTURE.netcdf_promote = True
+iris.FUTURE.cell_datetime_objects = True
 
 
 __all__ = ['rot2d',
@@ -138,12 +135,14 @@ def get_roms(url, time_slice, n=3):
 
 # IPython display.
 def css_styles(css='style.css'):
+    from IPython.display import HTML
     with open(css) as f:
         styles = f.read()
     return HTML('<style>{}</style>'.format(styles))
 
 
 def to_html(df, css='style.css'):
+    from IPython.display import HTML
     with open(css, 'r') as f:
         style = """<style>{}</style>""".format(f.read())
     table = dict(style=style, table=df.to_html())
@@ -160,6 +159,7 @@ df = read_csv(os.path.join(rootpath, 'data', 'climatology_data_sources.csv'))
 
 def make_map(bbox, **kw):
     """Creates a folium map instance for SECOORA."""
+    from folium.folium import Map
 
     line = kw.pop('line', True)
     states = kw.pop('states', True)
@@ -191,6 +191,8 @@ def make_map(bbox, **kw):
 
 def inline_map(m):
     """Takes a folium instance or a html path and load into an iframe."""
+    from folium.folium import Map
+    from IPython.display import HTML, IFrame
     if isinstance(m, Map):
         m._build_map()
         srcdoc = m.HTML.replace('"', '&quot;')
