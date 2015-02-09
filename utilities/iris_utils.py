@@ -26,7 +26,6 @@ from iris.cube import CubeList
 from iris.pandas import as_cube
 from iris.exceptions import CoordinateNotFoundError, CoordinateMultiDimError
 
-from oceans import wrap_lon180
 
 iris.FUTURE.netcdf_promote = True
 iris.FUTURE.cell_datetime_objects = True
@@ -138,6 +137,7 @@ def _minmax(v):
 
 
 def _get_indices(cube, bbox):
+    from oceans import wrap_lon180
     lons = cube.coord('longitude').points
     lats = cube.coord('latitude').points
     lons = wrap_lon180(lons)
