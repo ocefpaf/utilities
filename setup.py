@@ -30,9 +30,9 @@ version = find_version('utilities', '__init__.py')
 long_description = '{}\n'.format(read('README.md'))
 
 # Hard library dependencies:
-requires = ['iris', 'oceans', 'lxml', 'pandas', 'beautifulsoup4']
+requires = ['iris', 'lxml', 'pandas', 'beautifulsoup4']
 # Soft library dependencies:
-recommended = dict(full=["ipython-notebook", "pyugrid", "folium"])
+recommended = dict(full=["ipython-notebook", "pyugrid", "folium", "oceans"])
 # pip install 'utilities[full]'
 
 
