@@ -7,7 +7,7 @@
 # e-mail:   ocefpaf@gmail
 # web:      http://ocefpaf.github.io/
 # created:  04-Feb-2015
-# modified: Thu 05 Feb 2015 03:53:20 PM BRT
+# modified: Wed 11 Feb 2015 04:12:47 PM BRT
 #
 # obs:
 #
@@ -19,8 +19,10 @@ import warnings
 from glob import glob
 from io import BytesIO
 from urllib import urlopen
+from datetime import datetime, timedelta
 
 # Scientific stack.
+import pytz
 import numpy as np
 from owslib import fes
 from pandas import Panel, DataFrame, read_csv, concat
@@ -29,9 +31,6 @@ from netCDF4 import MFDataset, date2index, num2date
 import iris
 from iris.pandas import as_data_frame
 
-iris.FUTURE.netcdf_promote = True
-iris.FUTURE.cell_datetime_objects = True
-
 import requests
 from lxml import etree
 from bs4 import BeautifulSoup
@@ -39,6 +38,9 @@ from bs4 import BeautifulSoup
 # Local.
 from .pytools import url_lister, parse_url
 
+
+iris.FUTURE.netcdf_promote = True
+iris.FUTURE.cell_datetime_objects = True
 
 __all__ = ['get_model_name',
            'extract_columns',
@@ -56,7 +58,8 @@ __all__ = ['get_model_name',
            'nc2df',
            'scrape_thredds',
            'CF_names',
-           'titles']
+           'titles',
+           'fix_url']
 
 
 salinity = ['sea_water_salinity',
@@ -181,6 +184,13 @@ titles = dict(SABGOM='http://omgsrv1.meas.ncsu.edu:8080/thredds/dodsC/fmrc/'
               'Shelf_Daily_SWAN_Nowcast_Forecast_Wave_Model_Data_best.ncd',
               USF_FVCOM='http://crow.marine.usf.edu:8080/thredds/dodsC/'
               'FVCOM-Nowcast-Agg.nc')
+
+
+def fix_url(start, url):
+    diff = (datetime.utcnow().replace(tzinfo=pytz.utc)) - start
+    if diff > timedelta(days=30):
+        url = url.replace('omgsrv1', 'omgarch1')
+        return url
 
 
 def get_model_name(cube, url):
