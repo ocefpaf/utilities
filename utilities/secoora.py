@@ -7,7 +7,7 @@
 # e-mail:   ocefpaf@gmail
 # web:      http://ocefpaf.github.io/
 # created:  04-Feb-2015
-# modified: Wed 11 Feb 2015 04:12:47 PM BRT
+# modified: Wed 11 Feb 2015 05:38:10 PM BRT
 #
 # obs:
 #
@@ -193,19 +193,49 @@ def fix_url(start, url):
         return url
 
 
+def _remove_parenthesis(word):
+    try:
+        return word[word.index("(") + 1:word.rindex(")")]
+    except ValueError:
+        return word
+
+
+def _guess_name(model_full_name):
+    words = []
+    for word in model_full_name.split():
+        if word.isupper():
+            words.append(_remove_parenthesis(word))
+    mod_name = ' '.join(words)
+    if not mod_name:
+        mod_name = ''.join([c for c in model_full_name.split('(')[0]
+                            if c.isupper()])
+    if len(mod_name.split()) > 1:
+        mod_name = '_'.join(mod_name.split()[:2])
+    return mod_name
+
+
+def _sanitize(name):
+    name = name.replace('/', '_')
+    name = name.replace(' ', '_')
+    return name
+
+
 def get_model_name(cube, url):
     url = parse_url(url)
+    # If there is no title assign the URL.
     try:
         model_full_name = cube.attributes['title']
     except AttributeError:
         model_full_name = url
-    try:
-        for mod_name, uri in titles.items():
-            if url == uri:
-                break
-    except KeyError:
-        warnings.warn('Model %s not in the list' % url)
-        mod_name = model_full_name
+    # First searches the titles dictionary, if not try to guess.
+    for mod_name, uri in titles.items():
+        if url == uri:
+            print(mod_name)
+            break
+        else:
+            warnings.warn('Model %s not in the list.  Guessing' % url)
+            mod_name = _guess_name(model_full_name)
+            mod_name = _sanitize(mod_name)
     return mod_name, model_full_name
 
 
