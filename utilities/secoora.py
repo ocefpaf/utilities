@@ -7,7 +7,7 @@
 # e-mail:   ocefpaf@gmail
 # web:      http://ocefpaf.github.io/
 # created:  04-Feb-2015
-# modified: Wed 11 Feb 2015 05:38:10 PM BRT
+# modified: Wed 11 Feb 2015 07:20:26 PM BRT
 #
 # obs:
 #
@@ -230,7 +230,6 @@ def get_model_name(cube, url):
     # First searches the titles dictionary, if not try to guess.
     for mod_name, uri in titles.items():
         if url == uri:
-            print(mod_name)
             break
         else:
             warnings.warn('Model %s not in the list.  Guessing' % url)
