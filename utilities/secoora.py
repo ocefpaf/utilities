@@ -7,7 +7,7 @@
 # e-mail:   ocefpaf@gmail
 # web:      http://ocefpaf.github.io/
 # created:  04-Feb-2015
-# modified: Wed 11 Feb 2015 07:20:26 PM BRT
+# modified: Thu 12 Feb 2015 07:03:07 PM BRT
 #
 # obs:
 #
@@ -81,49 +81,47 @@ water_level = ['sea_surface_height',
                'water_surface_height_above_reference_datum',
                'sea_surface_height_above_reference_ellipsoid']
 
-currents = ['sea_water_speed',
-            'direction_of_sea_water_velocity',
-            'surface_eastward_sea_water_velocity',
-            'surface_northward_sea_water_velocity',
-            'surface_geostrophic_sea_water_x_velocity',
-            'surface_geostrophic_sea_water_y_velocity'
-            'surface_geostrophic_eastward_sea_water_velocity',
-            'surface_geostrophic_northward_sea_water_velocity',
-            'eastward_sea_water_velocity',
-            'northward_sea_water_velocity',
-            'sea_water_x_velocity',
-            'sea_water_y_velocity',
-            'baroclinic_eastward_sea_water_velocity',
-            'baroclinic_northward_sea_water_velocity',
-            'barotropic_eastward_sea_water_velocity',
-            'barotropic_northward_sea_water_velocity',
-            'barotropic_sea_water_x_velocity',
-            'barotropic_sea_water_y_velocity',
-            'bolus_eastward_sea_water_velocity',
-            'bolus_northward_sea_water_velocity',
-            'bolus_sea_water_x_velocity',
-            'bolus_sea_water_y_velocity',
-            'x_sea_water_velocity',
-            'y_sea_water_velocity',
-            'eastward_transformed_eulerian_mean_velocity',
-            'northward_transformed_eulerian_mean_velocity',
-            'surface_eastward_geostrophic_sea_water_velocity',
-            'surface_northward_geostrophic_sea_water_velocity',
-            'surface_geostrophic_sea_water_x_velocity_assuming_'
-            'sea_level_for_geoid',
-            'surface_geostrophic_sea_water_y_velocity_assuming_'
-            'sea_level_for_geoid',
-            'surface_geostrophic_eastward_sea_water_velocity_assuming_'
-            'sea_level_for_geoid',
-            'surface_geostrophic_northward_sea_water_velocity_assuming_'
-            'sea_level_for_geoid',
-            'surface_eastward_geostrophic_sea_water_velocity_assuming_'
-            'sea_level_for_geoid',
-            'surface_northward_geostrophic_sea_water_velocity_assuming_'
-            'sea_level_for_geoid']
+speed_direction = ['sea_water_speed', 'direction_of_sea_water_velocity']
+
+u = ['surface_eastward_sea_water_velocity',
+     'eastward_sea_water_velocity',
+     'sea_water_x_velocity',
+     'x_sea_water_velocity',
+     'eastward_transformed_eulerian_mean_velocity']
+
+v = ['northward_sea_water_velocity',
+     'surface_northward_sea_water_velocity',
+     'sea_water_y_velocity',
+     'y_sea_water_velocity',
+     'northward_transformed_eulerian_mean_velocity']
+
+"""
+'surface_geostrophic_sea_water_x_velocity',
+'surface_geostrophic_sea_water_y_velocity'
+'surface_geostrophic_eastward_sea_water_velocity',
+'surface_geostrophic_northward_sea_water_velocity',
+'baroclinic_eastward_sea_water_velocity',
+'baroclinic_northward_sea_water_velocity',
+'barotropic_eastward_sea_water_velocity',
+'barotropic_northward_sea_water_velocity',
+'barotropic_sea_water_x_velocity',
+'barotropic_sea_water_y_velocity',
+'bolus_eastward_sea_water_velocity',
+'bolus_northward_sea_water_velocity',
+'bolus_sea_water_x_velocity',
+'bolus_sea_water_y_velocity',
+'surface_eastward_geostrophic_sea_water_velocity',
+'surface_northward_geostrophic_sea_water_velocity',
+'surface_geostrophic_sea_water_x_velocity_assuming_sea_level_for_geoid',
+'surface_geostrophic_sea_water_y_velocity_assuming_sea_level_for_geoid',
+'surface_geostrophic_eastward_sea_water_velocity_assuming_sea_level_for_geoid',
+'surface_geostrophic_northward_sea_water_velocity_assuming_sea_level_for_geoid',
+'surface_eastward_geostrophic_sea_water_velocity_assuming_sea_level_for_geoid',
+'surface_northward_geostrophic_sea_water_velocity_assuming_sea_level_for_geoid'
+"""
 
 CF_names = dict({'salinity': salinity,
-                 'currents': currents,
+                 'currents': dict(u=u, v=v, speed_direction=speed_direction),
                  'water level': water_level,
                  'sea_water_temperature': temperature})
 
