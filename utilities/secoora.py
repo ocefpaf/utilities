@@ -188,7 +188,7 @@ def fix_url(start, url):
     diff = (datetime.utcnow().replace(tzinfo=pytz.utc)) - start
     if diff > timedelta(days=30):
         url = url.replace('omgsrv1', 'omgarch1')
-        return url
+    return url
 
 
 def _remove_parenthesis(word):
