@@ -7,7 +7,7 @@
 # e-mail:   ocefpaf@gmail
 # web:      http://ocefpaf.github.io/
 # created:  04-Feb-2015
-# modified: Tue 24 Feb 2015 03:12:14 PM BRT
+# modified: Tue 24 Feb 2015 03:19:42 PM BRT
 #
 # obs:
 #
@@ -286,7 +286,7 @@ def secoora_buoys():
                 buoy = buoy.split('=')[1]
             if buoy.endswith('.nc'):
                 buoy = buoy[:-3]
-            url = '{}/{}.nc.html'.format(base_url, buoy)
+            url = '{}/{}.nc'.format(base_url, buoy)
             yield url
 
 
