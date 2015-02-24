@@ -7,7 +7,7 @@
 # e-mail:   ocefpaf@gmail
 # web:      http://ocefpaf.github.io/
 # created:  04-Feb-2015
-# modified: Thu 12 Feb 2015 07:03:07 PM BRT
+# modified: Tue 24 Feb 2015 03:12:14 PM BRT
 #
 # obs:
 #
@@ -276,12 +276,34 @@ def secoora_buoys():
     urls = url_lister(thredds)
     base_url = "http://129.252.139.124/thredds/dodsC"
     for buoy in urls:
-        if (("?dataset=" in buoy)
-           and ('archive' not in buoy)
-           and ('usf.c12.weatherpak' not in buoy)
-           and ('cormp.ocp1.buoy' not in buoy)):
-            buoy = buoy.split('id_')[1]
-            url = '{}/{}.nc'.format(base_url, buoy)
+        if (("?dataset=" in buoy) and
+           ('archive' not in buoy) and
+           ('usf.c12.weatherpak' not in buoy) and
+           ('cormp.ocp1.buoy' not in buoy)):
+            try:
+                buoy = buoy.split('id_')[1]
+            except IndexError:
+                buoy = buoy.split('=')[1]
+            if buoy.endswith('.nc'):
+                buoy = buoy[:-3]
+            url = '{}/{}.nc.html'.format(base_url, buoy)
+            yield url
+
+
+def _secoora_buoys():
+    """BeautifulSoup alternative."""
+    from bs4 import BeautifulSoup
+    thredds = "http://129.252.139.124/thredds/catalog_platforms.html"
+    connection = urlopen(thredds)
+    page = connection.read()
+    connection.close()
+    soup = BeautifulSoup(page)
+    base_url = "http://129.252.139.124/thredds/dodsC"
+    for a in soup.find_all("a"):
+        href = a.get('href')
+        if "?dataset=" in href:
+            buoy = a.next_element.string
+            url = '{}/{}.nc.html'.format(base_url, buoy)
             yield url
 
 
