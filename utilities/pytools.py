@@ -1,10 +1,16 @@
+from __future__ import division
+
 # Standard Library.
 import os
 import time
 import signal
-from urllib import urlopen
-from urlparse import urlparse
 from contextlib import contextmanager
+try:
+    from urllib import urlopen
+    from urlparse import urlparse
+except ImportError:
+    from urllib.request import urlopen
+    from urllib.parse import urlparse
 
 # Scientific stack.
 import numpy as np
