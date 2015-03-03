@@ -1,21 +1,9 @@
-# -*- coding: utf-8 -*-
-#
-# skill_score.py
-#
-# purpose:  Skill score functions
-# author:   Filipe P. A. Fernandes
-# e-mail:   ocefpaf@gmail
-# web:      http://ocefpaf.github.io/
-# created:  05-Feb-2015
-# modified: Thu 05 Feb 2015 04:26:47 PM BRT
-#
-# obs:
-#
-
-# TODO: Taylor, SST
+from __future__ import division
 
 import numpy as np
 from scipy.stats.stats import pearsonr
+
+# TODO: Taylor, SST
 
 __all__ = ['both_valid',
            'pearsonr_paired']

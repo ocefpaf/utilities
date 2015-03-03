@@ -1,16 +1,4 @@
-# -*- coding: utf-8 -*-
-#
-# iris_utils.py
-#
-# purpose:  Some iris tricks to load/slice data
-# author:   Filipe P. A. Fernandes
-# e-mail:   ocefpaf@gmail
-# web:      http://ocefpaf.github.io/
-# created:  04-Feb-2015
-# modified: Mon 09 Feb 2015 03:18:46 PM BRT
-#
-# obs:
-#
+from __future__ import division
 
 # Standard library.
 from datetime import datetime
@@ -50,6 +38,69 @@ __all__ = ['z_coord',
            'save_timeseries',
            'make_tree',
            'get_nearest_water']
+
+
+def _source_of_data(cube, coverage_content_type='modelResult'):
+    """
+    Check if the `coverage_content_type` of the cude.
+    The `coverage_content_type` is an ISO 19115-1 code to indicating the
+    source of the data types and can be one of the following:
+
+    image, thematicClassification, physicalMeasurement, auxiliaryInformation,
+    qualityInformation, referenceInformation, modelResult, coordinate
+
+    Examples
+    --------
+    >>> import iris
+    >>> iris.FUTURE.netcdf_promote = True
+    >>> url = ("http://testbedapps-dev.sura.org/thredds/dodsC/"
+    ...        "in/vims/selfe/ike/ultralite/vardrag/nowave/2d")
+    >>> cubes = iris.load_raw(url, 'sea_surface_height_above_geoid')
+    >>> [source_of_data(cube) for cube in cubes]
+    [True, True]
+    """
+
+    cube_coverage_content_type = cube.attributes['coverage_content_type']
+    if cube_coverage_content_type == coverage_content_type:
+        return True
+    else:
+        return False
+
+
+def is_model(cube):
+    """Heuristic way to find if a cube data is `modelResult` or not.
+    WARNING: This function may return False positives and False
+    negatives!!!"""
+    # First criteria (Strong): "forecast" word in the time coord.
+    try:
+        coords = cube.coords(axis='T')
+        for coord in coords:
+            if 'forecast' in coord.name():
+                print("Time axis")
+                return True
+    except CoordinateNotFoundError:
+        pass
+    # Second criteria (Strong): `UGRID` cubes are models.
+    conventions = cube.attributes.get('Conventions', 'None')
+    if conventions.upper() == 'UGRID':
+        print("UGRID")
+        return True
+    # Third criteria (Strong): dimensionless coords are present.
+    try:
+        coords = cube.coords(axis='Z')
+        for coord in coords:
+            if 'ocean_' in coord.name():
+                print("Vertical axis")
+                return True
+    except CoordinateNotFoundError:
+        pass
+    # Forth criteria (weak): Assumes that all "GRID" attribute are models.
+    cdm_data_type = cube.attributes.get('cdm_data_type', 'None')
+    feature_type = cube.attributes.get('featureType', 'None')
+    if cdm_data_type.upper() == 'GRID' or feature_type.upper() == 'GRID':
+        print("GRID")
+        return True
+    return False
 
 
 def z_coord(cube):
@@ -356,7 +407,7 @@ def make_tree(cube):
     if (lon.ndim == 1) and (lat.ndim == 1) and (cube.ndim == 3):
         lon, lat = np.meshgrid(lon, lat)
     # Unstructure are already paired!
-    tree = KDTree(zip(lon.ravel(), lat.ravel()))
+    tree = KDTree(list(zip(lon.ravel(), lat.ravel())))
     return tree, lon, lat
 
 
@@ -393,7 +444,8 @@ def get_nearest_water(cube, tree, xi, yi, k=10, max_dist=0.04, min_var=0.01):
     # 0.01 m (1 cm) this eliminates flat line model time series that come from
     # land points that should have had missing values.
     series, dist, idx = None, None, None
-    for dist, idx in zip(distances, zip(i, j)):
+    IJs = list(zip(i, j))
+    for dist, idx in zip(distances, IJs):
         if unstructured:  # NOTE: This would be so elegant in py3k!
             idx = (idx[0],)
         # This weird syntax allow for idx to be len 1 or 2.
@@ -439,5 +491,5 @@ def var_lev_date(url=None, var=None, mytime=None, lev=0, subsample=1,
         sliced = sliced[jmin:jmax:subsample, imin:imax:subsample]
     else:
         sliced = sliced[lev, jmin:jmax:subsample, imin:imax:subsample]
-    print('Slice retrieved in %f seconds' % (time.time() - time0))
+    print('Slice retrieved in {:.2f} seconds'.format(time.time() - time0))
     return sliced

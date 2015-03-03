@@ -1,16 +1,4 @@
-# -*- coding: utf-8 -*-
-#
-# secoora.py
-#
-# purpose:  SECOORA helper functions
-# author:   Filipe P. A. Fernandes
-# e-mail:   ocefpaf@gmail
-# web:      http://ocefpaf.github.io/
-# created:  04-Feb-2015
-# modified: Tue 24 Feb 2015 03:19:42 PM BRT
-#
-# obs:
-#
+from __future__ import division
 
 # Standard Library.
 import os
@@ -18,8 +6,11 @@ import fnmatch
 import warnings
 from glob import glob
 from io import BytesIO
-from urllib import urlopen
 from datetime import datetime, timedelta
+try:
+    from urllib import urlopen
+except ImportError:
+    from urllib.request import urlopen
 
 # Scientific stack.
 import pytz
