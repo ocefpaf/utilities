@@ -1,0 +1,13 @@
+# Hard.
+iris
+lxml
+pandas
+beautifulsoup4
+# Soft.
+ipython-notebook
+pyugrid
+folium
+oceans
+# Test.
+pytest
+pytest-cov

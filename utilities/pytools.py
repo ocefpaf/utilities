@@ -1,8 +1,7 @@
-from __future__ import division
+from __future__ import division, absolute_import
 
 # Standard Library.
 import os
-import time
 import signal
 from contextlib import contextmanager
 try:
@@ -13,13 +12,12 @@ except ImportError:
     from urllib.parse import urlparse
 
 # Scientific stack.
+import iris
 import numpy as np
 import numpy.ma as ma
 from pandas import read_csv
 from netCDF4 import Dataset, date2index, num2date
 
-import iris
-from cartopy.feature import NaturalEarthFeature, COLORS
 
 import lxml.html
 
@@ -37,14 +35,23 @@ __all__ = ['rot2d',
            'get_coordinates',
            'parse_url',
            'url_lister',
-           'timeit',
            'time_limit',
            'TimeoutException']
 
 
 # ROMS.
 def rot2d(x, y, ang):
-    """Rotate vectors by geometric angle."""
+    """
+    Rotate vectors by geometric angle.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> x, y = rot2d(1, 0, np.deg2rad(90))
+    >>> np.allclose([0, 1], [x, y])
+    True
+
+    """
     xr = x * np.cos(ang) - y * np.sin(ang)
     yr = x * np.sin(ang) + y * np.cos(ang)
     return xr, yr
@@ -66,12 +73,14 @@ def shrink(a, b):
     the dimensions of each other. The input arrays must have the same
     number of dimensions, and the resulting arrays will have the same
     shape.
-    Example
-    -------
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> rand = np.random.rand
     >>> shrink(rand(10, 10), (5, 9, 18)).shape
     (9, 10)
-    >>> map(shape, shrink(rand(10, 10, 10), rand(5, 9, 18)))
+    >>> map(np.shape, shrink(rand(10, 10, 10), rand(5, 9, 18)))
     [(5, 9, 10), (5, 9, 10)]
 
     """
@@ -156,15 +165,23 @@ def to_html(df, css='style.css'):
 
 
 # Mapping
-LAND = NaturalEarthFeature('physical', 'land', '10m', edgecolor='face',
-                           facecolor=COLORS['land'])
-
 rootpath = os.path.split(__file__)[0]
 df = read_csv(os.path.join(rootpath, 'data', 'climatology_data_sources.csv'))
 
 
 def make_map(bbox, **kw):
-    """Creates a folium map instance for SECOORA."""
+    """
+    Creates a folium map instance for SECOORA.
+
+    Examples
+    --------
+    >>> from folium import Map
+    >>> bbox = [-87.40, 24.25, -74.70, 36.70]
+    >>> m = make_map(bbox)
+    >>> isinstance(m, Map)
+    True
+
+    """
     from folium.folium import Map
 
     line = kw.pop('line', True)
@@ -196,7 +213,24 @@ def make_map(bbox, **kw):
 
 
 def inline_map(m):
-    """Takes a folium instance or a html path and load into an iframe."""
+    """
+    Takes a folium instance or a html path and load into an iframe.
+
+    Examples
+    --------
+    >>> import os
+    >>> from IPython.display import HTML, IFrame
+    >>> bbox = [-87.40, 24.25, -74.70, 36.70]
+    >>> m = make_map(bbox)
+    >>> html = inline_map(m)
+    >>> isinstance(html, HTML)
+    True
+    >>> fname = os.path.join('data', 'mapa.html')
+    >>> html = inline_map(fname)
+    >>> isinstance(html, IFrame)
+    True
+
+    """
     from folium.folium import Map
     from IPython.display import HTML, IFrame
     if isinstance(m, Map):
@@ -211,8 +245,17 @@ def inline_map(m):
 
 
 def get_coordinates(bbox):
-    """Create bounding box coordinates for the map.  It takes flat or
-    nested list/numpy.array and returns 4 points for the map corners."""
+    """
+    Create bounding box coordinates for the map.  It takes flat or
+    nested list/numpy.array and returns 4 points for the map corners.
+
+    Examples
+    --------
+    >>> bbox = [-87.40, 24.25, -74.70, 36.70]
+    >>> len(get_coordinates(bbox))
+    4
+
+    """
     bbox = np.asanyarray(bbox).ravel()
     if bbox.size == 4:
         bbox = bbox.reshape(2, 2)
@@ -221,7 +264,6 @@ def get_coordinates(bbox):
         coordinates.append([bbox[0][1], bbox[1][0]])
         coordinates.append([bbox[1][1], bbox[1][0]])
         coordinates.append([bbox[1][1], bbox[0][0]])
-        coordinates.append([bbox[0][1], bbox[0][0]])
     else:
         raise ValueError('Wrong number corners.'
                          '  Expected 4 got {}'.format(bbox.size))
@@ -230,14 +272,28 @@ def get_coordinates(bbox):
 
 # Web-parsing.
 def parse_url(url):
-    """This will preserve any given scheme but will add http if none is
-    provided."""
+    """
+    This will preserve any given scheme but will add http if none is
+    provided.
+
+    Examples
+    --------
+    >>> parse_url('www.google.com')
+    'http://www.google.com'
+    >>> parse_url('https://www.google.com')
+    'https://www.google.com'
+
+    """
     if not urlparse(url).scheme:
         url = "http://{}".format(url)
     return url
 
 
 def url_lister(url):
+    """
+    Extract all href links from a given URL.
+
+    """
     urls = []
     connection = urlopen(url)
     dom = lxml.html.fromstring(connection.read())
@@ -248,18 +304,11 @@ def url_lister(url):
 
 # Misc.
 @contextmanager
-def timeit(log=None):
-    t = time.time()
-    yield
-    elapsed = time.strftime("%H:%M:%S", time.gmtime(time.time()-t))
-    if log:
-        log.info(elapsed)
-    else:
-        print(elapsed)
-
-
-@contextmanager
 def time_limit(seconds=10):
+    """
+    Raise a TimeoutException after n `seconds`.
+
+    """
     def signal_handler(signum, frame):
         raise TimeoutException("Timed out!")
     signal.signal(signal.SIGALRM, signal_handler)
@@ -272,20 +321,26 @@ def time_limit(seconds=10):
 
 class TimeoutException(Exception):
     """
+    Timeout Exception.
+
     Example
     -------
     >>> def long_function_call():
-    >>>     import time
-    >>>     sec = 0
-    >>>>    while True:
-    >>>         sec += 1
-    >>>         print(sec)
-    >>>         time.sleep(1)
-    >>>
+    ...     import time
+    ...     sec = 0
+    ...     while True:
+    ...         sec += 1
+    ...         time.sleep(1)
     >>> try:
-    >>>     with time_limit(10):
-    >>>     long_function_call()
-    >>> except TimeoutException as msg:
-    >>>     print("Timed out!")
+    ...     with time_limit(3):
+    ...         long_function_call()
+    ... except TimeoutException as msg:
+    ...     print('{!r}'.format(msg))
+    TimeoutException('Timed out!',)
     """
     pass
+
+
+if __name__ == '__main__':
+    import doctest
+    doctest.testmod()

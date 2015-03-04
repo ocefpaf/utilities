@@ -1,0 +1,33 @@
+language: python
+
+env:
+    - CONDA="python=2.7"
+    - CONDA="python=3.4"
+
+before_install:
+    - URL=http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh
+    - wget $URL -O miniconda.sh
+    - bash miniconda.sh -b -p $HOME/miniconda
+    - export PATH="$HOME/miniconda/bin:$PATH"
+    - hash -r
+    - conda config --set always_yes yes
+    - conda update conda
+    - conda config --set show_channel_urls True && conda config --add channels http://conda.binstar.org/ioos/channel/main
+    - conda info -a
+    - travis_retry conda create -n test $CONDA --file req.txt
+    - source activate test
+    # GUI
+    - "export DISPLAY=:99.0"
+    - "sh -e /etc/init.d/xvfb start"
+install:
+    - export PYTHONWARNINGS=all
+
+script:
+    - if [[ $CONDA == python=2.7* ]]; then
+        py.test ;
+      else
+        py.test ;
+      fi
+
+after_success:
+    - coveralls
