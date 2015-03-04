@@ -1,11 +1,13 @@
 # utilities
 
-## SECOORA/IOOS "utilities.py" as a separate module.
+<!-- [![DOI](https://zenodo.org/badge/9372/pyoceans/utilities.svg)](http://dx.doi.org/10.5281/zenodo.14475) -->
+[![build status](http://img.shields.io/travis/pyoceans/utilities/master.svg?style=flat)](https://travis-ci.org/pyoceans/utilities)
+[![license](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](https://github.com/pyoceans/utilities/blob/master/LICENSE)
 
-The project goals is to make it easier for people to understand what is in
-the several `utilities.py`.  IOOS/system-test `utilities.py` re-implemented
-these functions several times in different directories, causing function
-code fragmentation and making it hard to fix all functions if a bug is found.
+## IOOS/SECOORA utilities functions.
 
-## Examples
-TODO
+A collection of misc functions used in IOOS/SECOORA notebooks.
+Examples
+[here](http://nbviewer.ipython.org/github/ioos/secoora/tree/master/notebooks/)
+and
+[here](http://nbviewer.ipython.org/github/ioos/system-test/tree/master/).
