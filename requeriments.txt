@@ -1,5 +1,6 @@
 # Hard.
-iris
+iris=1.7.2_DEV_9e1fd13
+requests=2.5.1
 lxml
 pandas
 beautifulsoup4

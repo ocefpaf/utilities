@@ -24,6 +24,9 @@ import lxml.html
 iris.FUTURE.netcdf_promote = True
 iris.FUTURE.cell_datetime_objects = True
 
+rootpath = os.path.split(__file__)[0]
+df = read_csv(os.path.join(rootpath, 'data', 'climatology_data_sources.csv'))
+style = os.path.join(rootpath, 'data', 'style.css')
 
 __all__ = ['rot2d',
            'shrink',
@@ -149,14 +152,38 @@ def get_roms(url, time_slice, n=3):
 
 
 # IPython display.
-def css_styles(css='style.css'):
+def css_styles(css=style):
+    """
+    Load css styles.
+
+    Examples
+    --------
+    >>> from IPython.display import HTML
+    >>> html = css_styles()
+    >>> isinstance(html, HTML)
+    True
+
+    """
     from IPython.display import HTML
     with open(css) as f:
         styles = f.read()
     return HTML('<style>{}</style>'.format(styles))
 
 
-def to_html(df, css='style.css'):
+def to_html(df, css=style):
+    """
+    Return a pandas table HTML representation with the datagrid css.
+
+    Examples
+    --------
+    >>> from IPython.display import HTML
+    >>> from pandas import DataFrame
+    >>> df = DataFrame(np.empty((5, 5)))
+    >>> html = to_html(df)
+    >>> isinstance(html, HTML)
+    True
+
+    """
     from IPython.display import HTML
     with open(css, 'r') as f:
         style = """<style>{}</style>""".format(f.read())
@@ -165,10 +192,6 @@ def to_html(df, css='style.css'):
 
 
 # Mapping
-rootpath = os.path.split(__file__)[0]
-df = read_csv(os.path.join(rootpath, 'data', 'climatology_data_sources.csv'))
-
-
 def make_map(bbox, **kw):
     """
     Creates a folium map instance for SECOORA.
