@@ -270,13 +270,14 @@ def inline_map(m):
 def get_coordinates(bbox):
     """
     Create bounding box coordinates for the map.  It takes flat or
-    nested list/numpy.array and returns 4 points for the map corners.
+    nested list/numpy.array and returns 5 points that closes square
+    around the borders.
 
     Examples
     --------
     >>> bbox = [-87.40, 24.25, -74.70, 36.70]
     >>> len(get_coordinates(bbox))
-    4
+    5
 
     """
     bbox = np.asanyarray(bbox).ravel()
@@ -287,6 +288,7 @@ def get_coordinates(bbox):
         coordinates.append([bbox[0][1], bbox[1][0]])
         coordinates.append([bbox[1][1], bbox[1][0]])
         coordinates.append([bbox[1][1], bbox[0][0]])
+        coordinates.append([bbox[0][1], bbox[0][0]])
     else:
         raise ValueError('Wrong number corners.'
                          '  Expected 4 got {}'.format(bbox.size))
