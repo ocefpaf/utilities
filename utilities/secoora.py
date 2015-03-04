@@ -1,4 +1,4 @@
-from __future__ import division
+from __future__ import division, absolute_import
 
 # Standard Library.
 import os
@@ -34,20 +34,17 @@ iris.FUTURE.netcdf_promote = True
 iris.FUTURE.cell_datetime_objects = True
 
 __all__ = ['get_model_name',
-           'extract_columns',
            'secoora2df',
            'secoora_buoys',
            'load_secoora_ncs',
            'fes_date_filter',
            'service_urls',
-           'processStationInfo',
            'sos_request',
            'get_ndbc_longname',
            'get_coops_longname',
            'coops2df',
            'ndbc2df',
            'nc2df',
-           'scrape_thredds',
            'CF_names',
            'titles',
            'fix_url']
@@ -176,6 +173,22 @@ titles = dict(SABGOM='http://omgsrv1.meas.ncsu.edu:8080/thredds/dodsC/fmrc/'
 
 
 def fix_url(start, url):
+    """
+    If dates are older than 30 days switch URL prefix to archive.
+    NOTE: start must be non-naive datetime object.
+
+    Examples
+    --------
+    >>> from datetime import datetime
+    >>> import pytz
+    >>> start = datetime(2010, 1, 1).replace(tzinfo=pytz.utc)
+    >>> url = ('http://omgsrv1.meas.ncsu.edu:8080/thredds/dodsC/fmrc/'
+    ...        'sabgom/SABGOM_Forecast_Model_Run_Collection_best.ncd')
+    >>> new_url = fix_url(start, url)
+    >>> new_url.split('/')[2]
+    'omgarch1.meas.ncsu.edu:8080'
+
+    """
     diff = (datetime.utcnow().replace(tzinfo=pytz.utc)) - start
     if diff > timedelta(days=30):
         url = url.replace('omgsrv1', 'omgarch1')
@@ -183,6 +196,13 @@ def fix_url(start, url):
 
 
 def _remove_parenthesis(word):
+    """
+    Examples
+    --------
+    >>> _remove_parenthesis("(ROMS)")
+    'ROMS'
+
+    """
     try:
         return word[word.index("(") + 1:word.rindex(")")]
     except ValueError:
@@ -190,6 +210,24 @@ def _remove_parenthesis(word):
 
 
 def _guess_name(model_full_name):
+    """
+    Examples
+    --------
+    >>> some_names = ['USF FVCOM - Nowcast Aggregation',
+    ...               'ROMS/TOMS 3.0 - New Floria Shelf Application',
+    ...               'COAWST Forecast System : USGS : US East Coast and Gulf'
+    ...               'of Mexico (Experimental)',
+    ...               'ROMS/TOMS 3.0 - South-Atlantic Bight and Gulf of'
+    ...               'Mexico',
+    ...               'HYbrid Coordinate Ocean Model (HYCOM): Global',
+    ...               'ROMS ESPRESSO Real-Time Operational IS4DVAR Forecast'
+    ...               'System Version 2 (NEW) 2013-present FMRC History'
+    ...               '(Best)']
+    >>> [_guess_name(model_full_name) for model_full_name in some_names]
+    ['USF_FVCOM', 'ROMS/TOMS', 'COAWST_USGS', 'ROMS/TOMS', 'HYCOM', \
+'ROMS_ESPRESSO']
+
+    """
     words = []
     for word in model_full_name.split():
         if word.isupper():
@@ -204,30 +242,59 @@ def _guess_name(model_full_name):
 
 
 def _sanitize(name):
+    """
+    Examples
+    --------
+    >>> _sanitize('ROMS/TOMS')
+    'ROMS_TOMS'
+    >>> _sanitize('USEAST model')
+    'USEAST_model'
+
+    """
     name = name.replace('/', '_')
     name = name.replace(' ', '_')
     return name
 
 
 def get_model_name(cube, url):
+    """
+    Return a model short and long name from a cube.
+
+    Examples
+    --------
+    >>> import iris
+    >>> import warnings
+    >>> url = ('http://omgsrv1.meas.ncsu.edu:8080/thredds/dodsC/fmrc/sabgom/'
+    ...        'SABGOM_Forecast_Model_Run_Collection_best.ncd')
+    >>> with warnings.catch_warnings():
+    ...     warnings.simplefilter("ignore")  # Suppress iris warnings.
+    ...     cube = iris.load_cube(url, "sea_water_potential_temperature")
+    >>> get_model_name(cube, url)
+    ('SABGOM', 'ROMS/TOMS 3.0 - South-Atlantic Bight and Gulf of Mexico')
+
+    """
     url = parse_url(url)
-    # If there is no title assign the URL.
+    # [model_full_name]: if there is no title assign the URL.
     try:
         model_full_name = cube.attributes['title']
     except AttributeError:
         model_full_name = url
-    # First searches the titles dictionary, if not try to guess.
+    # [mod_name]: first searches the titles dictionary, if not try to guess.
     for mod_name, uri in titles.items():
         if url == uri:
-            break
-        else:
-            warnings.warn('Model %s not in the list.  Guessing' % url)
-            mod_name = _guess_name(model_full_name)
-            mod_name = _sanitize(mod_name)
+            return mod_name, model_full_name
+    warnings.warn('Model %s not in the list.  Guessing' % url)
+    mod_name = _guess_name(model_full_name)
+    mod_name = _sanitize(mod_name)
     return mod_name, model_full_name
 
 
-def extract_columns(name, cube):
+def _extract_columns(name, cube):
+    """
+    Workaround to extract data from a cube and create a dataframe
+    following SOS boilerplate.
+
+    """
     try:
         station = cube.attributes['abstract']
     except KeyError:
@@ -243,9 +310,15 @@ def extract_columns(name, cube):
 
 
 def secoora2df(buoys, varname):
+    """
+    This function assumes a global cube object.
+    FIXME: Consider removing from the packages and add directly in the
+    notebook for clarity.
+
+    """
     secoora_obs = dict()
     for station, cube in buoys.items():
-        secoora_obs.update({station: extract_columns(station, cube)})
+        secoora_obs.update({station: _extract_columns(station, cube)})
 
     df = DataFrame.from_dict(secoora_obs, orient='index')
     df.reset_index(inplace=True)
@@ -263,6 +336,21 @@ def secoora2df(buoys, varname):
 
 
 def secoora_buoys():
+    """
+    Returns a generator with secoora catalog_platforms URLs.
+
+    Examples
+    ---------
+    >>> import types
+    >>> from urlparse import urlparse
+    >>> buoys = secoora_buoys()
+    >>> isinstance(buoys, types.GeneratorType)
+    True
+    >>> url = list(buoys)[0]
+    >>> bool(urlparse(url).scheme)
+    True
+
+    """
     thredds = "http://129.252.139.124/thredds/catalog_platforms.html"
     urls = url_lister(thredds)
     base_url = "http://129.252.139.124/thredds/dodsC"
@@ -282,7 +370,10 @@ def secoora_buoys():
 
 
 def _secoora_buoys():
-    """BeautifulSoup alternative."""
+    """
+    TODO: BeautifulSoup alternative.
+
+    """
     from bs4 import BeautifulSoup
     thredds = "http://129.252.139.124/thredds/catalog_platforms.html"
     connection = urlopen(thredds)
@@ -299,6 +390,11 @@ def _secoora_buoys():
 
 
 def load_secoora_ncs(run_name):
+    """
+    Loads local files using the run_name date.
+
+    NOTE: Consider moving this inside the notebook.
+    """
     fname = '{}-{}.nc'.format
     OBS_DATA = nc2df(os.path.join(run_name,
                                   fname(run_name, 'OBS_DATA')))
@@ -327,8 +423,30 @@ def load_secoora_ncs(run_name):
 
 
 def fes_date_filter(start, stop, constraint='overlaps'):
-    """Take datetime-like objects and returns a fes filter for date range.
-    NOTE: Truncates the minutes!"""
+    """
+    Take datetime-like objects and returns a fes filter for date range.
+    NOTE: Truncates the minutes!!!
+
+    FIXME: Not sure if this is working as expected.
+    @rsignell-usgs what are the expected values for within and overlaps?
+
+    Examples
+    --------
+    >>> from datetime import datetime, timedelta
+    >>> stop = datetime(2010, 1, 1, 12, 30, 59).replace(tzinfo=pytz.utc)
+    >>> start = stop - timedelta(days=7)
+    >>> begin, end = fes_date_filter(start, stop, constraint='overlaps')
+    >>> begin.literal, end.literal
+    ('2010-01-01 12:00', '2009-12-25 12:00')
+    >>> begin.propertyoperator, end.propertyoperator
+    ('ogc:PropertyIsLessThanOrEqualTo', 'ogc:PropertyIsGreaterThanOrEqualTo')
+    >>> begin, end = fes_date_filter(start, stop, constraint='within')
+    >>> begin.literal, end.literal
+    ('2009-12-25 12:00', '2010-01-01 12:00')
+    >>> begin.propertyoperator, end.propertyoperator
+    ('ogc:PropertyIsGreaterThanOrEqualTo', 'ogc:PropertyIsLessThanOrEqualTo')
+
+    """
     start = start.strftime('%Y-%m-%d %H:00')
     stop = stop.strftime('%Y-%m-%d %H:00')
     if constraint == 'overlaps':
@@ -351,7 +469,10 @@ def fes_date_filter(start, stop, constraint='overlaps'):
 
 
 def service_urls(records, service='odp:url'):
-    """Extract service_urls of a specific type (DAP, SOS) from records."""
+    """
+    Extract service_urls of a specific type (DAP, SOS) from csw records.
+
+    """
     service_string = 'urn:x-esri:specification:ServiceType:' + service
     urls = []
     for key, rec in records.items():
@@ -365,25 +486,26 @@ def service_urls(records, service='odp:url'):
     return urls
 
 
-def processStationInfo(obs_loc_df, st_list, source):
-    st_data = obs_loc_df['station_id']
-    lat_data = obs_loc_df['latitude (degree)']
-    lon_data = obs_loc_df['longitude (degree)']
-    for k in range(0, len(st_data)):
-        station_name = st_data[k]
-        if station_name in st_list:
-            pass
-        else:
-            st_list[station_name] = {}
-            st_list[station_name]["lat"] = lat_data[k]
-            st_list[station_name]["source"] = source
-            st_list[station_name]["lon"] = lon_data[k]
-            print(station_name)
-    print("number of stations in bbox %s" % len(st_list.keys()))
-    return st_list
-
-
 def sos_request(url='opendap.co-ops.nos.noaa.gov/ioos-dif-sos/SOS', **kw):
+    """
+    Examples
+    --------
+    >>> from urlparse import urlparse
+    >>> from datetime import date, datetime, timedelta
+    >>> today = date.today().strftime("%Y-%m-%d")
+    >>> start = datetime.strptime(today, "%Y-%m-%d") - timedelta(7)
+    >>> bbox = [-87.40, 24.25, -74.70, 36.70]
+    >>> sos_name = 'water_surface_height_above_reference_datum'
+    >>> offering='urn:ioos:network:NOAA.NOS.CO-OPS:WaterLevelActive'
+    >>> params = dict(observedProperty=sos_name,
+    ...               eventTime=start.strftime('%Y-%m-%dT%H:%M:%SZ'),
+    ...               featureOfInterest='BBOX:{0},{1},{2},{3}'.format(*bbox),
+    ...               offering=offering)
+    >>> uri = 'http://opendap.co-ops.nos.noaa.gov/ioos-dif-sos/SOS'
+    >>> url = sos_request(uri, **params)
+    >>> bool(urlparse(url).scheme)
+    True
+    """
     url = parse_url(url)
     offering = 'urn:ioos:network:NOAA.NOS.CO-OPS:CurrentsActive'
     params = dict(service='SOS',
@@ -402,7 +524,17 @@ def sos_request(url='opendap.co-ops.nos.noaa.gov/ioos-dif-sos/SOS', **kw):
 
 
 def get_ndbc_longname(station):
-    """Get long_name for specific station from NOAA NDBC."""
+    """
+    Get long_name for specific station from NOAA NDBC.
+
+    Examples
+    --------
+    >>> get_ndbc_longname(31005)
+    u'Sw Extension'
+    >>> get_ndbc_longname(44013)
+    u'Boston 16 Nm East Of Boston'
+
+    """
     url = "http://www.ndbc.noaa.gov/station_page.php"
     params = dict(station=station)
     r = requests.get(url, params=params)
@@ -416,8 +548,16 @@ def get_ndbc_longname(station):
 
 
 def get_coops_longname(station):
-    """Get longName for specific station from COOPS SOS using DescribeSensor
-    request."""
+    """
+    Get longName for specific station from COOPS SOS using DescribeSensor
+    request.
+
+    Examples
+    --------
+    >>> get_coops_longname(8651370)
+    'Duck, NC'
+
+    """
     url = ('opendap.co-ops.nos.noaa.gov/ioos-dif-sos/SOS?service=SOS&'
            'request=DescribeSensor&version=1.0.0&'
            'outputFormat=text/xml;subtype="sensorML/1.0.1"&'
@@ -434,7 +574,10 @@ def get_coops_longname(station):
 
 
 def coops2df(collector, coops_id):
-    """Request CSV response from SOS and convert to Pandas DataFrames."""
+    """
+    Request CSV response from SOS and convert to Pandas dataframe.
+
+    """
     collector.features = [coops_id]
     long_name = get_coops_longname(coops_id)
     response = collector.raw(responseFormat="text/csv")
@@ -445,6 +588,10 @@ def coops2df(collector, coops_id):
 
 
 def ndbc2df(collector, ndbc_id):
+    """
+    Request CSV response from NDBC and convert to Pandas dataframe.
+
+    """
     uri = 'http://dods.ndbc.noaa.gov/thredds/dodsC/data/adcp'
     url = ('%s/%s/' % (uri, ndbc_id))
     urls = url_lister(url)
@@ -486,6 +633,10 @@ def ndbc2df(collector, ndbc_id):
 
 
 def nc2df(fname):
+    """
+    Load a netCDF timeSeries file as a dataframe.
+
+    """
     cube = iris.load_cube(fname)
     for coord in cube.coords(dimensions=[0]):
         name = coord.name()
@@ -502,13 +653,6 @@ def nc2df(fname):
     return df
 
 
-def scrape_thredds(url, uri):
-    urls = url_lister(url)
-    filetype = "?dataset="
-    file_list = [filename for filename in fnmatch.filter(urls, filetype)]
-
-    files = [fname.split('/')[-1] for fname in file_list]
-    urls = ['%s/%s' % (uri, fname) for fname in files]
-    if not urls:
-        raise Exception("Cannot find data at {!r}".format(url))
-    return urls
+if __name__ == '__main__':
+    import doctest
+    doctest.testmod()
