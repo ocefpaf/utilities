@@ -142,6 +142,8 @@ CSW = {'COMT':
 
 titles = dict(SABGOM='http://omgsrv1.meas.ncsu.edu:8080/thredds/dodsC/fmrc/'
               'sabgom/SABGOM_Forecast_Model_Run_Collection_best.ncd',
+              SABGOM_ARCHIVE='http://omgarch1.meas.ncsu.edu:8080/thredds/dodsC/'
+              'fmrc/sabgom/SABGOM_Forecast_Model_Run_Collection_best.ncd',
               USEAST='http://omgsrv1.meas.ncsu.edu:8080/thredds/dodsC/fmrc/'
               'us_east/US_East_Forecast_Model_Run_Collection_best.ncd',
               COAWST_4='http://geoport.whoi.edu/thredds/dodsC/coawst_4/use/'
