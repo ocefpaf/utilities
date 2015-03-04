@@ -2,7 +2,8 @@ language: python
 
 env:
     - CONDA="python=2.7"
-    - CONDA="python=3.4"
+    # Most of IOOS software is non-py3k compat.
+    #- CONDA="python=3.4"
 
 before_install:
     - URL=http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh
@@ -14,7 +15,7 @@ before_install:
     - conda update conda
     - conda config --set show_channel_urls True && conda config --add channels http://conda.binstar.org/ioos/channel/main
     - conda info -a
-    - travis_retry conda create -n test $CONDA --file req.txt
+    - travis_retry conda create -n test $CONDA --file requeriments.txt
     - source activate test
     # GUI
     - "export DISPLAY=:99.0"

@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<head>
+   <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+   <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7/leaflet.css" />
+   <script src="http://cdn.leafletjs.com/leaflet-0.7/leaflet.js"></script>
+   <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+   <script src="http://d3js.org/queue.v1.min.js"></script>
+
+   
+   
+   
+   
+
+   <style>
+
+      html, body {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+
+      .legend {
+          padding: 0px 0px;
+          font: 10px sans-serif;
+          background: white;
+          background: rgba(255,255,255,0.8);
+          box-shadow: 0 0 15px rgba(0,0,0,0.2);
+          border-radius: 5px;
+      }
+
+      .key path {
+        display: none;
+      }
+
+   </style>
+</head>
+
+<body>
+
+   <div id="map" style="width: 750px; height: 500px"></div>
+
+   <script>
+
+      queue()
+          .defer(d3.json, 'https://raw.githubusercontent.com/ocefpaf/secoora/factor_map/notebooks/secoora.json')
+          .await(makeMap)
+
+      function makeMap(error, gjson_1) {
+
+          
+
+          
+
+          function matchKey(datapoint, key_variable){
+              if (typeof key_variable[0][datapoint] === 'undefined') {
+                  return null;
+              }
+              else {
+                  return parseFloat(key_variable[0][datapoint]);
+              };
+          };
+
+          
+
+          var map = L.map('map').setView([30.475, -81.05], 5);
+
+          L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+              maxZoom: 18,
+              minZoom: 1,
+              attribution: 'Map data (c) <a href="http://openstreetmap.org">OpenStreetMap</a> contributors'
+          }).addTo(map);
+
+          
+          var circle_1 = L.circle([32.8, -79.62], 500, {
+                            color: 'black',
+                            fillColor: '#3186cc',
+                            fillOpacity: 0.2
+                            });
+          circle_1.bindPopup("<b>CAP2</b>");
+      circle_1._popup.options.maxWidth = 300;
+          map.addLayer(circle_1)
+          
+          var circle_2 = L.circle([34.14, -77.86], 500, {
+                            color: 'black',
+                            fillColor: '#3186cc',
+                            fillOpacity: 0.2
+                            });
+          circle_2.bindPopup("<b>CMS</b>");
+      circle_2._popup.options.maxWidth = 300;
+          map.addLayer(circle_2)
+          
+          var circle_3 = L.circle([32.27, -80.4], 500, {
+                            color: 'black',
+                            fillColor: '#3186cc',
+                            fillOpacity: 0.2
+                            });
+          circle_3.bindPopup("<b>FRP2</b>");
+      circle_3._popup.options.maxWidth = 300;
+          map.addLayer(circle_3)
+          
+          var circle_4 = L.circle([34.14, -77.72], 500, {
+                            color: 'black',
+                            fillColor: '#3186cc',
+                            fillOpacity: 0.2
+                            });
+          circle_4.bindPopup("<b>ILM2</b>");
+      circle_4._popup.options.maxWidth = 300;
+          map.addLayer(circle_4)
+          
+          var circle_5 = L.circle([33.99, -77.36], 500, {
+                            color: 'black',
+                            fillColor: '#3186cc',
+                            fillOpacity: 0.2
+                            });
+          circle_5.bindPopup("<b>ILM3</b>");
+      circle_5._popup.options.maxWidth = 300;
+          map.addLayer(circle_5)
+          
+          var circle_6 = L.circle([34.48, -77.28], 500, {
+                            color: 'black',
+                            fillColor: '#3186cc',
+                            fillOpacity: 0.2
+                            });
+          circle_6.bindPopup("<b>LEJ3</b>");
+      circle_6._popup.options.maxWidth = 300;
+          map.addLayer(circle_6)
+          
+          var circle_7 = L.circle([33.91, -78.15], 500, {
+                            color: 'black',
+                            fillColor: '#3186cc',
+                            fillOpacity: 0.2
+                            });
+          circle_7.bindPopup("<b>OCP1</b>");
+      circle_7._popup.options.maxWidth = 300;
+          map.addLayer(circle_7)
+          
+          var circle_8 = L.circle([33.83, -78.48], 500, {
+                            color: 'black',
+                            fillColor: '#3186cc',
+                            fillOpacity: 0.2
+                            });
+          circle_8.bindPopup("<b>SUN2</b>");
+      circle_8._popup.options.maxWidth = 300;
+          map.addLayer(circle_8)
+          
+          var circle_9 = L.circle([28.19, -82.79], 500, {
+                            color: 'black',
+                            fillColor: '#3186cc',
+                            fillOpacity: 0.2
+                            });
+          circle_9.bindPopup("<b>ANC</b>");
+      circle_9._popup.options.maxWidth = 300;
+          map.addLayer(circle_9)
+          
+          var circle_10 = L.circle([28.43, -82.67], 500, {
+                            color: 'black',
+                            fillColor: '#3186cc',
+                            fillOpacity: 0.2
+                            });
+          circle_10.bindPopup("<b>APK</b>");
+      circle_10._popup.options.maxWidth = 300;
+          map.addLayer(circle_10)
+          
+          var circle_11 = L.circle([26.4, -81.88], 500, {
+                            color: 'black',
+                            fillColor: '#3186cc',
+                            fillOpacity: 0.2
+                            });
+          circle_11.bindPopup("<b>BCP</b>");
+      circle_11._popup.options.maxWidth = 300;
+          map.addLayer(circle_11)
+          
+          var circle_12 = L.circle([27.17, -82.92], 500, {
+                            color: 'black',
+                            fillColor: '#3186cc',
+                            fillOpacity: 0.2
+                            });
+          circle_12.bindPopup("<b>C10</b>");
+      circle_12._popup.options.maxWidth = 300;
+          map.addLayer(circle_12)
+          
+          var circle_13 = L.circle([27.5, -83.72], 500, {
+                            color: 'black',
+                            fillColor: '#3186cc',
+                            fillOpacity: 0.2
+                            });
+          circle_13.bindPopup("<b>C12</b>");
+      circle_13._popup.options.maxWidth = 300;
+          map.addLayer(circle_13)
+          
+          var circle_14 = L.circle([26.06, -83.07], 500, {
+                            color: 'black',
+                            fillColor: '#3186cc',
+                            fillOpacity: 0.2
+                            });
+          circle_14.bindPopup("<b>C13</b>");
+      circle_14._popup.options.maxWidth = 300;
+          map.addLayer(circle_14)
+          
+          var circle_15 = L.circle([27.68, -82.77], 500, {
+                            color: 'black',
+                            fillColor: '#3186cc',
+                            fillOpacity: 0.2
+                            });
+          circle_15.bindPopup("<b>C21</b>");
+      circle_15._popup.options.maxWidth = 300;
+          map.addLayer(circle_15)
+          
+          var circle_16 = L.circle([27.74, -82.69], 500, {
+                            color: 'black',
+                            fillColor: '#3186cc',
+                            fillOpacity: 0.2
+                            });
+          circle_16.bindPopup("<b>CLB</b>");
+      circle_16._popup.options.maxWidth = 300;
+          map.addLayer(circle_16)
+          
+          var circle_17 = L.circle([26.07, -85.91], 500, {
+                            color: 'black',
+                            fillColor: '#3186cc',
+                            fillOpacity: 0.2
+                            });
+          circle_17.bindPopup("<b>CPK</b>");
+      circle_17._popup.options.maxWidth = 300;
+          map.addLayer(circle_17)
+          
+          var circle_18 = L.circle([28.15, -82.8], 500, {
+                            color: 'black',
+                            fillColor: '#3186cc',
+                            fillOpacity: 0.2
+                            });
+          circle_18.bindPopup("<b>FHP</b>");
+      circle_18._popup.options.maxWidth = 300;
+          map.addLayer(circle_18)
+          
+          var circle_19 = L.circle([25.08, -81.1], 500, {
+                            color: 'black',
+                            fillColor: '#3186cc',
+                            fillOpacity: 0.2
+                            });
+          circle_19.bindPopup("<b>NFB</b>");
+      circle_19._popup.options.maxWidth = 300;
+          map.addLayer(circle_19)
+          
+          var circle_20 = L.circle([30.06, -84.29], 500, {
+                            color: 'black',
+                            fillColor: '#3186cc',
+                            fillOpacity: 0.2
+                            });
+          circle_20.bindPopup("<b>SHP</b>");
+      circle_20._popup.options.maxWidth = 300;
+          map.addLayer(circle_20)
+          
+          var circle_21 = L.circle([28.16, -82.76], 500, {
+                            color: 'black',
+                            fillColor: '#3186cc',
+                            fillOpacity: 0.2
+                            });
+          circle_21.bindPopup("<b>TAS</b>");
+      circle_21._popup.options.maxWidth = 300;
+          map.addLayer(circle_21)
+          
+          var circle_22 = L.circle([27.54, -82.74], 500, {
+                            color: 'black',
+                            fillColor: '#3186cc',
+                            fillOpacity: 0.2
+                            });
+          circle_22.bindPopup("<b>ANM</b>");
+      circle_22._popup.options.maxWidth = 300;
+          map.addLayer(circle_22)
+          
+          var circle_23 = L.circle([27.6, -82.76], 500, {
+                            color: 'black',
+                            fillColor: '#3186cc',
+                            fillOpacity: 0.2
+                            });
+          circle_23.bindPopup("<b>EGK</b>");
+      circle_23._popup.options.maxWidth = 300;
+          map.addLayer(circle_23)
+          
+          var circle_24 = L.circle([27.95, -82.46], 500, {
+                            color: 'black',
+                            fillColor: '#3186cc',
+                            fillOpacity: 0.2
+                            });
+          circle_24.bindPopup("<b>UTP</b>");
+      circle_24._popup.options.maxWidth = 300;
+          map.addLayer(circle_24)
+          
+
+          
+          var latLngs = [ [24.25, -87.4],  [24.25, -74.7],  [36.7, -74.7],  [36.7, -87.4],  [24.25, -87.4], ];
+var line_1 = L.polyline(latLngs,{
+color: '#FF0000',
+weight: 2,
+
+});
+          map.addLayer(line_1);
+          
+
+          
+
+          
+
+          
+
+          
+          function style_1(feature) {
+    return {
+        fillColor: 'none',
+        weight: 1,
+        opacity: 1,
+        color: 'Orange',
+        fillOpacity: 0.6
+    };
+}
+          
+
+          
+          gJson_layer_1 = L.geoJson(gjson_1, {style: style_1}).addTo(map)
+          
+
+          
+
+      };
+
+   </script>
+</body>
