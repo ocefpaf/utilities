@@ -28,7 +28,8 @@ __all__ = ['is_model',
            'bbox_extract_2Dcoords',
            'bbox_extract_1Dcoords',
            'subset',
-           'get_cubes',
+           'quick_load_cubes',
+           'proc_cube',
            'add_mesh',
            'standardize_fill_value',
            'ensure_timeseries',
@@ -402,16 +403,20 @@ def subset(cube, bbox):
     return cube
 
 
-def filter_list(lista):
+def _filter_none(lista):
     return [x for x in lista if x is not None]
 
 
-def get_cubes(url, name_list, bbox=None, time=None, units=None, callback=None,
-              constraint=None):
+def _in_list(cube, name_list):
+    return cube.standard_name in name_list
+
+
+def quick_load_cubes(url, name_list, callback=None, strict=False):
     """
-    Return all cubes found using a `name_list` of standard_names and
-    constraining by `bbox`, `time`, and iris `constraint`.  The cubes found
-    can be transformed via a `callback` and the `units` can be converted.
+    Return all cubes found using a `name_list` of standard_names.  The cubes
+    found can be transformed via a `callback` function.
+    If `strict` is set to True the function will return only one cube is
+    possible, otherwise an exception will be raise.
 
     TODO: Create a criteria to choose a sensor.
     buoy = "http://129.252.139.124/thredds/dodsC/fldep.stlucieinlet..nc"
@@ -421,42 +426,67 @@ def get_cubes(url, name_list, bbox=None, time=None, units=None, callback=None,
     --------
     >>> import iris
     >>> import warnings
-    >>> from iris.unit import Unit
-    >>> from datetime import datetime, timedelta
     >>> url = ("http://omgsrv1.meas.ncsu.edu:8080/thredds/dodsC/fmrc/sabgom/"
     ...        "SABGOM_Forecast_Model_Run_Collection_best.ncd")
-    >>> stop = datetime.utcnow()
-    >>> start = stop - timedelta(days=7)
-    >>> bbox = [-87.40, 24.25, -74.70, 36.70]
+    >>> name_list = ['sea_water_potential_temperature']
     >>> with warnings.catch_warnings():
     ...     warnings.simplefilter("ignore")
-    ...     cubes = get_cubes(url, ['sea_water_potential_temperature'],
-    ...                       time=(start, stop), bbox=bbox,
-    ...                       units=Unit('Celsius'))
+    ...     cubes = quick_load_cubes(url, name_list)
+    ...     cube = quick_load_cubes(url, name_list, strict=True)
     >>> isinstance(cubes, list)
     True
-    >>> isinstance(cubes[0], iris.cube.Cube)
+    >>> isinstance(cube, iris.cube.Cube)
+    True
+    """
+
+    cubes = iris.load_raw(url, callback=callback)
+    cubes = CubeList([cube for cube in cubes if _in_list(cube, name_list)])
+    cubes = _filter_none(cubes)
+    if not cubes:
+        raise ValueError('Cannot find {!r} in {}.'.format(name_list, url))
+    if strict:
+        if len(cubes) == 1:
+            return cubes[0]
+        else:
+            msg = "> 1 cube found!  Expected just one.\n {!r}".format
+        raise ValueError(msg(cubes))
+    return cubes
+
+
+def proc_cube(cube, bbox=None, time=None, constraint=None, units=None):
+    """
+    Constraining by `bbox`, `time`, and iris `constraint` object.
+    and the `units` can be converted.
+
+    Examples
+    --------
+    >>> import pytz
+    >>> import iris
+    >>> import warnings
+    >>> from datetime import datetime, timedelta
+    >>> url = ("http://omgarch1.meas.ncsu.edu:8080/thredds/dodsC/fmrc/sabgom/"
+    ...        "SABGOM_Forecast_Model_Run_Collection_best.ncd")
+    >>> stop = datetime(2014, 7, 7, 12)
+    >>> start = stop - timedelta(days=7)
+    >>> stop = stop.replace(tzinfo=pytz.utc)
+    >>> bbox = [-87.40, 24.25, -74.70, 36.70]
+    >>> name_list = ['sea_water_potential_temperature']
+    >>> with warnings.catch_warnings():
+    ...     warnings.simplefilter("ignore")
+    ...     cube = quick_load_cubes(url, name_list, strict=True)
+    >>> new_cube = proc_cube(cube, bbox=bbox, time=(start, stop))
+    >>> cube.shape != new_cube.shape
     True
 
     """
 
-    cubes = iris.load_raw(url, callback=callback)
-
-    def in_list(cube):
-        return cube.standard_name in name_list
-    cubes = CubeList([cube for cube in cubes if in_list(cube)])
-
-    cubes = filter_list(cubes)
-    if not cubes:
-        raise ValueError('Cube does not contain {!r}'.format(name_list))
     if constraint:
-        cubes = cubes.extract(constraint)
-        if not cubes:
+        cube = cube.extract(constraint)
+        if not cube:
             raise ValueError('No cube using {!r}'.format(constraint))
     if bbox:
-        cubes = [subset(cube, bbox) for cube in cubes]
-        cubes = filter_list(cubes)
-        if not cubes:
+        cube = subset(cube, bbox)
+        if not cube:
             raise ValueError('No cube using {!r}'.format(bbox))
     if time:
         if isinstance(time, datetime):
@@ -466,13 +496,11 @@ def get_cubes(url, name_list, bbox=None, time=None, units=None, callback=None,
         else:
             raise ValueError('Time must be start or (start, stop).'
                              '  Got {!r}'.format(time))
-        cubes = [time_slice(cube, start, stop) for cube in cubes]
-        cubes = filter_list(cubes)
+        cube = time_slice(cube, start, stop)
     if units:
-        for cube in cubes:
-            if cube.units != units:
-                cube.convert_units(units)
-    return cubes
+        if cube.units != units:
+            cube.convert_units(units)
+    return cube
 
 
 def add_mesh(cube, url):
