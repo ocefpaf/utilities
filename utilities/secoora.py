@@ -109,9 +109,9 @@ v = ['northward_sea_water_velocity',
 """
 
 CF_names = dict({'salinity': salinity,
+                 'sea_water_temperature': temperature,
                  'currents': dict(u=u, v=v, speed_direction=speed_direction),
-                 'water level': water_level,
-                 'sea_water_temperature': temperature})
+                 'water_surface_height_above_reference_datum': water_level})
 
 CSW = {'COMT':
        'comt.sura.org:8000',
@@ -251,10 +251,14 @@ def _sanitize(name):
     'ROMS_TOMS'
     >>> _sanitize('USEAST model')
     'USEAST_model'
+    >>> _sanitize('GG1SST, SST')
+    'GG1SST_SST'
 
     """
+    name = name.replace(', ', '_')
     name = name.replace('/', '_')
     name = name.replace(' ', '_')
+    name = name.replace(',', '_')
     return name
 
 
