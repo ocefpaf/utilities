@@ -6,4 +6,4 @@ from .pytools import *
 from .iris_utils import *
 from .skill_score import *
 
-__version__ = '0.1.0'
+__version__ = '0.2.0'
