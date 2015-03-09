@@ -385,7 +385,7 @@ def subset(cube, bbox):
     """
     if (cube.coord(axis='X').ndim == 1 and cube.coord(axis='Y').ndim == 1):
         # Workaround `cube.intersection` hanging up on FVCOM models.
-        title = cube.attributes.get('title', None)
+        title = cube.attributes.get('title', 'untitled')
         featureType = cube.attributes.get('featureType', None)
         if (('FVCOM' in title) or ('ESTOFS' in title) or
            featureType == 'timeSeries'):
