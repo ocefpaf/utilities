@@ -1,6 +1,16 @@
 Changelog
 ---------
 
+Version 0.2.0
+
+* Replaces `get_cubes()` with `quick_load_cubes()` and `proc_cube()`.
+
+Version 0.1.0
+
+* Added a test module.
+* style.css as default css.
+* Many bug fixes.
+
 Version 0.0.1
 
 * First release
