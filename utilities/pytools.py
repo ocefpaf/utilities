@@ -209,12 +209,41 @@ def make_map(bbox, **kw):
 
     line = kw.pop('line', True)
     states = kw.pop('states', True)
+    layers = kw.pop('layers', True)
+    hf_radar = kw.pop('hf_radar', True)
     zoom_start = kw.pop('zoom_start', 5)
     secoora_stations = kw.pop('secoora_stations', True)
 
     lon, lat = np.array(bbox).reshape(2, 2).mean(axis=0)
     m = Map(width=750, height=500,
             location=[lat, lon], zoom_start=zoom_start)
+
+    if hf_radar:
+        url = "http://hfrnet.ucsd.edu/thredds/wms/HFRNet/USEGC/6km/hourly/RTV"
+        m.add_wms_layer(wms_name="HF Radar",
+                        wms_url=url,
+                        wms_format="image/png",
+                        wms_layers='surface_sea_water_velocity')
+
+    if layers:
+        add = 'MapServer/tile/{z}/{y}/{x}'
+        base = 'http://services.arcgisonline.com/arcgis/rest/services'
+        ESRI = dict(Imagery='World_Imagery/MapServer',
+                    Ocean_Base='Ocean/World_Ocean_Base',
+                    Topo_Map='World_Topo_Map/MapServer',
+                    Street_Map='World_Street_Map/MapServer',
+                    Physical_Map='World_Physical_Map/MapServer',
+                    Terrain_Base='World_Terrain_Base/MapServer',
+                    NatGeo_World_Map='NatGeo_World_Map/MapServer',
+                    Shaded_Relief='World_Shaded_Relief/MapServer',
+                    Ocean_Reference='Ocean/World_Ocean_Reference',
+                    Navigation_Charts='Specialty/World_Navigation_Charts')
+        for tile_name, url in ESRI.items():
+            tile_url = '{}/{}/{}'.format(base, url, add)
+            m.add_tile_layer(tile_name=tile_name,
+                             tile_url=tile_url)
+
+    m.add_layers_to_map()
     if line:
         # Create the map and add the bounding box line.
         kw = dict(line_color='#FF0000', line_weight=2)
