@@ -1,10 +1,11 @@
 Changelog
 ---------
 
-Version 0.2.0
+Version 0.2.1
 
 * Added ESRI map and HF Radar map layers.
 * Fixed bug in `subset()` when searching for model titles.
+* Added workaround for `SciTools/iris#1568`
 
 Version 0.2.0
 
