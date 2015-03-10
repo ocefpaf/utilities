@@ -185,7 +185,7 @@ def get_surface(cube):
             idx = np.unique(z.points.argmax(axis=0))[0]
         else:
             idx = np.unique(z.points.argmin(axis=0))[0]
-        return cube[:, idx, ...]
+        return cube[:, int(idx), ...]
     else:
         return cube
 
