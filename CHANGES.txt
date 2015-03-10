@@ -3,6 +3,11 @@ Changelog
 
 Version 0.2.0
 
+* Added ESRI map and HF Radar map layers.
+* Fixed bug in `subset()` when searching for model titles.
+
+Version 0.2.0
+
 * Replaces `get_cubes()` with `quick_load_cubes()` and `proc_cube()`.
 
 Version 0.1.0
