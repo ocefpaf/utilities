@@ -725,6 +725,7 @@ def get_nearest_water(cube, tree, xi, yi, k=10, max_dist=0.04, min_var=0.01):
     series, dist, idx = None, None, None
     IJs = list(zip(i, j))
     for dist, idx in zip(distances, IJs):
+        idx = tuple([int(k) for k in idx])
         if unstructured:  # NOTE: This would be so elegant in py3k!
             idx = (idx[0],)
         # This weird syntax allow for idx to be len 1 or 2.
