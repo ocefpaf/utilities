@@ -1,6 +1,10 @@
 Changelog
 ---------
 
+Version 0.2.2
+
+* More workarounds for `SciTools/iris#1568`
+
 Version 0.2.1
 
 * Added ESRI map and HF Radar map layers.
