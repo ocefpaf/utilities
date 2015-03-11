@@ -35,6 +35,7 @@ __all__ = ['rot2d',
            'to_html',
            'make_map',
            'inline_map',
+           'embed_html',
            'get_coordinates',
            'parse_url',
            'url_lister',
@@ -264,9 +265,27 @@ def make_map(bbox, **kw):
     return m
 
 
+def embed_html(path="mapa.html", width=750, height=500):
+    from IPython.display import HTML
+    """
+    Avoid in-lining the source HTMl into the notebook by adding just a link.
+    CAVEAT: All links must be relative!
+
+    Examples
+    --------
+    >>> html = embed_html(path="./mapa.html")
+    >>> isinstance(html, HTML)
+
+    """
+    html = ('<iframe src="files/{path}" '
+            'style="width: {width}px; height: {height}px;'
+            'border: none"></iframe>').format
+    return HTML(html(path=path, width=width, height=height))
+
+
 def inline_map(m):
     """
-    Takes a folium instance or a html path and load into an iframe.
+    Takes a folium instance and load into an iframe.
 
     Examples
     --------
@@ -277,22 +296,18 @@ def inline_map(m):
     >>> html = inline_map(m)
     >>> isinstance(html, HTML)
     True
-    >>> fname = os.path.join('data', 'mapa.html')
-    >>> html = inline_map(fname)
-    >>> isinstance(html, IFrame)
-    True
 
     """
     from folium.folium import Map
-    from IPython.display import HTML, IFrame
+    from IPython.display import HTML
     if isinstance(m, Map):
         m._build_map()
         srcdoc = m.HTML.replace('"', '&quot;')
         embed = HTML('<iframe srcdoc="{srcdoc}" '
                      'style="width: 100%; height: 500px; '
                      'border: none"></iframe>'.format(srcdoc=srcdoc))
-    elif isinstance(m, str):
-        embed = IFrame(m, width=750, height=500)
+    else:
+        raise ValueError('{!r} is not a folium Map instance.')
     return embed
 
 
