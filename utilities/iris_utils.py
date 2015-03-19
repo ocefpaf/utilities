@@ -357,7 +357,7 @@ def bbox_extract_1Dcoords(cube, bbox):
     True
 
     """
-    lat = Constraint(latitude=lambda cell: bbox[1] <= cell < bbox[3])
+    lat = Constraint(latitude=lambda cell: bbox[1] <= cell <= bbox[3])
     lon = Constraint(longitude=lambda cell: bbox[0] <= cell <= bbox[2])
     cube = cube.extract(lon & lat)
     return cube
