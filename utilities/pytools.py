@@ -206,7 +206,7 @@ def make_map(bbox, **kw):
     True
 
     """
-    from folium.folium import Map
+    from folium import Map
 
     line = kw.pop('line', True)
     states = kw.pop('states', True)
@@ -285,7 +285,7 @@ def embed_html(path="mapa.html", width=750, height=500):
 
 def inline_map(m):
     """
-    Takes a folium instance and load into an iframe.
+    Takes a folium instance or a html path and load into an iframe.
 
     Examples
     --------
@@ -296,18 +296,22 @@ def inline_map(m):
     >>> html = inline_map(m)
     >>> isinstance(html, HTML)
     True
+    >>> fname = os.path.join('data', 'mapa.html')
+    >>> html = inline_map(fname)
+    >>> isinstance(html, IFrame)
+    True
 
     """
-    from folium.folium import Map
-    from IPython.display import HTML
+    from folium import Map
+    from IPython.display import HTML, IFrame
     if isinstance(m, Map):
         m._build_map()
         srcdoc = m.HTML.replace('"', '&quot;')
         embed = HTML('<iframe srcdoc="{srcdoc}" '
                      'style="width: 100%; height: 500px; '
                      'border: none"></iframe>'.format(srcdoc=srcdoc))
-    else:
-        raise ValueError('{!r} is not a folium Map instance.')
+    elif isinstance(m, str):
+        embed = IFrame(m, width=750, height=500)
     return embed
 
 
