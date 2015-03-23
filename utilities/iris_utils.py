@@ -31,7 +31,6 @@ __all__ = ['is_model',
            'quick_load_cubes',
            'proc_cube',
            'add_mesh',
-           'standardize_fill_value',
            'ensure_timeseries',
            'add_station',
            'remove_ssh',
@@ -515,22 +514,6 @@ def add_mesh(cube, url):
     return cube
 
 
-def standardize_fill_value(cube):
-    """
-    Work around default `fill_value` when obtaining
-    `_CubeSignature` (iris) using `lazy_data()` (biggus).
-    Warning use only when you DO KNOW that the slices should
-    have the same `fill_value`!!!
-
-    TODO: A fix was suggested to upstream (biggus) and this will
-    become obsolete.
-    """
-    if ma.isMaskedArray(cube._my_data):
-        fill_value = ma.empty(0, dtype=cube._my_data.dtype).fill_value
-        cube._my_data.fill_value = fill_value
-    return cube
-
-
 def _make_aux_coord(cube, axis='Y'):
     """Make any given coordinate an Auxiliary Coordinate."""
     coord = cube.coord(axis=axis)
@@ -725,7 +708,7 @@ def get_nearest_water(cube, tree, xi, yi, k=10, max_dist=0.04, min_var=0.01):
     series, dist, idx = None, None, None
     IJs = list(zip(i, j))
     for dist, idx in zip(distances, IJs):
-        idx = tuple([int(k) for k in idx])
+        idx = tuple([int(kk) for kk in idx])
         if unstructured:  # NOTE: This would be so elegant in py3k!
             idx = (idx[0],)
         # This weird syntax allow for idx to be len 1 or 2.
