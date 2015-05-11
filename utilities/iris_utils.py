@@ -119,8 +119,10 @@ def is_model(cube):
     # Forth criteria (weak): Assumes that all "GRID" attribute are models.
     cdm_data_type = cube.attributes.get('cdm_data_type', 'None')
     feature_type = cube.attributes.get('featureType', 'None')
+    source = cube.attributes.get('source', 'None')
     if cdm_data_type.upper() == 'GRID' or feature_type.upper() == 'GRID':
-        return True
+        if 'AVHRR' not in source:
+            return True
     return False
 
 
@@ -463,8 +465,8 @@ def proc_cube(cube, bbox=None, time=None, constraint=None, units=None):
     >>> import iris
     >>> import warnings
     >>> from datetime import datetime, timedelta
-    >>> url = ("http://omgarch1.meas.ncsu.edu:8080/thredds/dodsC/fmrc/sabgom/"
-    ...        "SABGOM_Forecast_Model_Run_Collection_best.ncd")
+    >>> url = ("http://tds.marine.rutgers.edu/thredds/dodsC/roms/espresso/"
+    ...        "2013_da/his_Best/ESPRESSO_Real-Time_v2_History_Best_Available_best.ncd")
     >>> stop = datetime(2014, 7, 7, 12)
     >>> start = stop - timedelta(days=7)
     >>> stop = stop.replace(tzinfo=pytz.utc)

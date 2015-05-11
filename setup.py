@@ -43,7 +43,7 @@ maintainer = "Filipe Fernandes"
 authors = ['Rich Signell', 'Filipe Fernandes']
 
 LICENSE = read('LICENSE.txt')
-long_description = '{}\n{}'.format(read('README.txt'), read('CHANGES.txt'))
+long_description = '{}\n{}'.format(read('README.rst'), read('CHANGES.txt'))
 
 
 # Dependencies.

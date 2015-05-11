@@ -1,8 +1,16 @@
 Changelog
 ---------
 
+Version 0.2.3
+
+* `is_model` now assumes that all "GRID" features that have the word AVHRR are
+  satellite data and not numerical models.
+
 Version 0.2.2
 
+* In-lining folium maps HTML because embed HTML fails with subdirectories.
+* Removed `standardize_fill_value` (See
+  https://github.com/SciTools/biggus/issues/94).
 * More workarounds for `SciTools/iris#1568`
 
 Version 0.2.1

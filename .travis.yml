@@ -6,8 +6,7 @@ env:
     #- CONDA="python=3.4"
 
 before_install:
-    - URL=http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh
-    - wget $URL -O miniconda.sh
+    - wget http://bit.ly/miniconda -O miniconda.sh
     - bash miniconda.sh -b -p $HOME/miniconda
     - export PATH="$HOME/miniconda/bin:$PATH"
     - hash -r
