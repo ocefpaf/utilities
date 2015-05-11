@@ -119,8 +119,10 @@ def is_model(cube):
     # Forth criteria (weak): Assumes that all "GRID" attribute are models.
     cdm_data_type = cube.attributes.get('cdm_data_type', 'None')
     feature_type = cube.attributes.get('featureType', 'None')
+    source = cube.attributes.get('source', 'None')
     if cdm_data_type.upper() == 'GRID' or feature_type.upper() == 'GRID':
-        return True
+        if 'AVHRR' not in source:
+            return True
     return False
 
 
