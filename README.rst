@@ -1,8 +1,8 @@
 utilities
 =========
 
-.. image:: https://zenodo.org/badge/5715/pyoceans/utilities.svg
-   :target: http://dx.doi.org/10.5281/zenodo.15848
+.. image:: https://zenodo.org/badge/doi/10.5281/zenodo.17496.svg
+   :target: http://dx.doi.org/10.5281/zenodo.17496
    :alt: doi
 .. image:: http://img.shields.io/travis/pyoceans/utilities/master.svg?style=flat
    :target: https://travis-ci.org/pyoceans/utilities
