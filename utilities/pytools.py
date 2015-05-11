@@ -216,7 +216,7 @@ def make_map(bbox, **kw):
     secoora_stations = kw.pop('secoora_stations', True)
 
     lon, lat = np.array(bbox).reshape(2, 2).mean(axis=0)
-    m = Map(width=750, height=500,
+    m = Map(width='100%', height='100%',
             location=[lat, lon], zoom_start=zoom_start)
 
     if hf_radar:
