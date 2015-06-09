@@ -1,10 +1,5 @@
-# Hard.
 iris
 requests
 lxml
 pandas
 beautifulsoup4
-# Soft.
-ipython-notebook
-folium
-oceans
