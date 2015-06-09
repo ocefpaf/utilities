@@ -1,7 +1,7 @@
 from __future__ import division, absolute_import
 
 import numpy as np
-from scipy.stats.stats import pearsonr
+
 
 # TODO: Taylor, SST
 
@@ -40,6 +40,8 @@ def pearsonr_paired(x, y):
     (1.0, 0.0)
 
     """
+    from scipy.stats.stats import pearsonr
+
     mask = both_valid(x, y)
     x, y = x[mask], y[mask]
     r, p = pearsonr(x-x.mean(), y-y.mean())

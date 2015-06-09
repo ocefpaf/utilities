@@ -13,7 +13,7 @@ class PyTest(TestCommand):
     """python setup.py test"""
     def finalize_options(self):
         TestCommand.finalize_options(self)
-        self.test_args = ['--strict', '--verbose', '--tb=long', 'tests']
+        self.test_args = ['--verbose']
         self.test_suite = True
 
     def run_tests(self):
@@ -47,9 +47,14 @@ long_description = '{}\n{}'.format(read('README.rst'), read('CHANGES.txt'))
 
 
 # Dependencies.
-hard = ['iris', 'lxml', 'pandas', 'beautifulsoup4']
-soft = dict(full=["ipython-notebook", "pyugrid", "folium", "oceans"])
-tests_require = ['pytest', 'pytest-cov']
+with open('requirements.txt') as f:
+    tests_require = f.readlines()
+install_requires = [t.strip() for t in tests_require]
+
+
+with open('requirements-dev.txt') as f:
+    tests_require = f.readlines()
+tests_require = [t.strip() for t in tests_require]
 
 
 config = dict(name='utilities',
@@ -74,12 +79,11 @@ config = dict(name='utilities',
               author_email=email,
               maintainer='Filipe Fernandes',
               maintainer_email=email,
-              url='https://github.com/pyoceans/utilities/releases/tag/0.0.1',
+              url='https://github.com/pyoceans/utilities/releases',
               platforms='any',
               keywords=['oceanography', 'data analysis'],
-              extras_require=soft,
-              install_requires=hard,
-              tests_require=tests_require,
+              install_requires=install_requires,
+              tests_require='pytest',
               zip_safe=False)
 
 setup(**config)
