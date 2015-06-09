@@ -1,3 +1,4 @@
-ipython-notebook
 folium
 oceans
+tardis
+ipython-notebook
