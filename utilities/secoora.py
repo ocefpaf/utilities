@@ -615,8 +615,10 @@ def ndbc2df(collector, ndbc_id):
     dates = num2date(time_dim[:], units=time_dim.units,
                      calendar=kw['calendar'])
 
-    idx_start = date2index(collector.start_time, time_dim, **kw)
-    idx_stop = date2index(collector.end_time, time_dim, **kw)
+    idx_start = date2index(collector.start_time.replace(tzinfo=None),
+                           time_dim, **kw)
+    idx_stop = date2index(collector.end_time.replace(tzinfo=None),
+                          time_dim, **kw)
     if idx_start == idx_stop:
         raise Exception("No data within time range"
                         " {!r} and {!r}".format(collector.start_time,
