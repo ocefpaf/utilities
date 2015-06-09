@@ -1,14 +1,10 @@
 # Hard.
-iris=1.7.2_DEV_9e1fd13
-requests=2.5.1
+iris
+requests
 lxml
 pandas
 beautifulsoup4
 # Soft.
 ipython-notebook
-pyugrid
 folium
 oceans
-# Test.
-pytest
-pytest-cov
