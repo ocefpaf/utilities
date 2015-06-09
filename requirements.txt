@@ -1,5 +1,5 @@
 iris
-requests
 lxml
 pandas
+requests
 beautifulsoup4
