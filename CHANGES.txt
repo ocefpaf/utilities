@@ -1,6 +1,12 @@
 Changelog
 ---------
 
+Version 0.2.4
+
+* Lazy import SciPy.
+* Factored `iris_utis.py` out of the module.
+* Fixed a bug in `ndbc2df`.
+
 Version 0.2.3
 
 * `is_model` now assumes that all "GRID" features that have the word AVHRR are
