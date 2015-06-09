@@ -12,7 +12,6 @@ except ImportError:
     from urllib.parse import urlparse
 
 # Scientific stack.
-import iris
 import numpy as np
 import numpy.ma as ma
 from pandas import read_csv
@@ -21,8 +20,6 @@ from netCDF4 import Dataset, date2index, num2date
 
 import lxml.html
 
-iris.FUTURE.netcdf_promote = True
-iris.FUTURE.cell_datetime_objects = True
 
 rootpath = os.path.split(__file__)[0]
 df = read_csv(os.path.join(rootpath, 'data', 'climatology_data_sources.csv'))
