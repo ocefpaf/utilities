@@ -75,13 +75,15 @@ u = ['surface_eastward_sea_water_velocity',
      'eastward_sea_water_velocity',
      'sea_water_x_velocity',
      'x_sea_water_velocity',
-     'eastward_transformed_eulerian_mean_velocity']
+     'eastward_transformed_eulerian_mean_velocity',
+     'eastward_sea_water_velocity_assuming_no_tide']
 
 v = ['northward_sea_water_velocity',
      'surface_northward_sea_water_velocity',
      'sea_water_y_velocity',
      'y_sea_water_velocity',
-     'northward_transformed_eulerian_mean_velocity']
+     'northward_transformed_eulerian_mean_velocity',
+     'northward_sea_water_velocity_assuming_no_tide']
 
 """
 'surface_geostrophic_sea_water_x_velocity',
