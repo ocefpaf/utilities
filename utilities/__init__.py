@@ -6,4 +6,4 @@ from .pytools import *
 from .skill_score import *
 from tardis import *
 
-__version__ = '0.2.4'
+__version__ = '0.2.5'

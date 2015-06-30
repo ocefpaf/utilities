@@ -1,6 +1,9 @@
 Changelog
 ---------
 
+Version 0.2.5
+* Added more CF-names to the velocity list.
+
 Version 0.2.4
 
 * Lazy import SciPy.
