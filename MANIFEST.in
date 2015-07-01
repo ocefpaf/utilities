@@ -1,5 +1,5 @@
 include *.txt
-include *.rst
+include README.rst
 
 recursive-include utilities *.py
 recursive-include utilities/data climatology_data_sources.csv
