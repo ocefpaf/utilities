@@ -16,6 +16,7 @@ before_install:
     - source activate test
     - travis_retry conda install --yes --file requirements-extras.txt
     - travis_retry conda install --yes pytest
+    - travis_retry conda install --yes requests==2.5.3
     - conda info -a
     # GUI
     - "export DISPLAY=:99.0"

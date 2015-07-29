@@ -16,6 +16,7 @@ except ImportError:
 import pytz
 import numpy as np
 from owslib import fes
+from owslib.swe.sensor.sml import SensorML
 from pandas import Panel, DataFrame, read_csv, concat
 from netCDF4 import MFDataset, date2index, num2date
 
@@ -41,7 +42,7 @@ __all__ = ['get_model_name',
            'service_urls',
            'sos_request',
            'get_ndbc_longname',
-           'get_coops_longname',
+           'get_coops_metadata',
            'coops2df',
            'ndbc2df',
            'nc2df',
@@ -555,15 +556,26 @@ def get_ndbc_longname(station):
     return long_name.title()
 
 
-def get_coops_longname(station):
+def _get_value(sensor, name='longName'):
+    value = None
+    sml = sensor.get(name, None)
+    if sml:
+        value = sml.value
+    return value
+
+
+def get_coops_metadata(station):
     """
-    Get longName for specific station from COOPS SOS using DescribeSensor
-    request.
+    Get longName and sensorName for specific station from COOPS SOS using
+    DescribeSensor and owslib.swe.sensor.sml.SensorML.
 
     Examples
     --------
-    >>> get_coops_longname(8651370)
+    >>> long_name, station_id = get_coops_metadata(8651370)
+    >>> long_name
     'Duck, NC'
+    >>> station_id
+    'urn:ioos:station:NOAA.NOS.CO-OPS:8651370'
 
     """
     url = ('opendap.co-ops.nos.noaa.gov/ioos-dif-sos/SOS?service=SOS&'
@@ -571,14 +583,22 @@ def get_coops_longname(station):
            'outputFormat=text/xml;subtype="sensorML/1.0.1"&'
            'procedure=urn:ioos:station:NOAA.NOS.CO-OPS:%s') % station
     url = parse_url(url)
-    tree = etree.parse(urlopen(url))
-    root = tree.getroot()
-    path = "//sml:identifier[@name='longName']/sml:Term/sml:value/text()"
-    namespaces = dict(sml="http://www.opengis.net/sensorML/1.0.1")
-    longName = root.xpath(path, namespaces=namespaces)
-    if len(longName) == 0:
-        longName = station
-    return longName[0]
+    xml = etree.parse(urlopen(url))
+    root = SensorML(xml)
+    if len(root.members) > 1:
+        msg = "Expected 1 member, got {}".format
+        raise ValueError(msg(len(root.members)))
+    system = root.members[0]
+
+    # NOTE:  Some metadata of interest.
+    # system.description
+    # short_name = _get_value(system.identifiers, name='shortName')
+    # [c.values() for c in system.components]
+
+    long_name = _get_value(system.identifiers, name='longName')
+    station_id = _get_value(system.identifiers, name='stationID')
+
+    return long_name, station_id
 
 
 def coops2df(collector, coops_id):
@@ -587,7 +607,7 @@ def coops2df(collector, coops_id):
 
     """
     collector.features = [coops_id]
-    long_name = get_coops_longname(coops_id)
+    long_name, station_id = get_coops_metadata(coops_id)
     response = collector.raw(responseFormat="text/csv")
     kw = dict(parse_dates=True, index_col='date_time')
     data_df = read_csv(BytesIO(response.encode('utf-8')), **kw)
