@@ -3,22 +3,27 @@ Changelog
 
 Version 0.2.5
 * Added more CF-names to the velocity list.
+* Added ioos module with system-test functions.
+* Replaced `get_coops_longName()` with `get_coops_metadata()`
+* Added Root Mean Squared Error`rmse()` and all of sklearn.metrics
+  (`mean_absolute_error`, `mean_squared_error`, `median_absolute_error`,
+  `r2_score`, `explained_variance_score`).
 
 Version 0.2.4
 
 * Lazy import SciPy.
 * Factored `iris_utis.py` out of the module.
-* Fixed a bug in `ndbc2df`.
+* Fixed a bug in `ndbc2df()`.
 
 Version 0.2.3
 
-* `is_model` now assumes that all "GRID" features that have the word AVHRR are
-  satellite data and not numerical models.
+* `is_model()` now assumes that all "GRID" features that have the word AVHRR
+  are satellite data and not numerical models.
 
 Version 0.2.2
 
-* In-lining folium maps HTML because embed HTML fails with subdirectories.
-* Removed `standardize_fill_value` (See
+* In-lining folium maps HTML because embed HTML fails with sub-directories.
+* Removed `standardize_fill_value()` (See
   https://github.com/SciTools/biggus/issues/94).
 * More workarounds for `SciTools/iris#1568`
 
@@ -35,7 +40,7 @@ Version 0.2.0
 Version 0.1.0
 
 * Added a test module.
-* style.css as default css.
+* style.css as default CSS.
 * Many bug fixes.
 
 Version 0.0.1

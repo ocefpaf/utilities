@@ -1,6 +1,7 @@
 folium
 oceans
 tardis
+scikit-learn
 ipython-notebook
 # request > 2.5.3 security deps
 pyopenssl

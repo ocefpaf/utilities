@@ -2,12 +2,35 @@ from __future__ import division, absolute_import
 
 import numpy as np
 
+try:
+    from sklearn.metrics import (mean_absolute_error,
+                                 mean_squared_error,
+                                 median_absolute_error,
+                                 r2_score,
+                                 explained_variance_score)
+except ImportError:
+    pass
 
 # TODO: Taylor, SST
 
 __all__ = ['both_valid',
            'pearsonr_paired']
 
+def rmse(obs, model):
+    """
+    Compute root mean square between the observed data (`obs`) and the modeled
+    data (`model`).
+    >>> obs = [3, -0.5, 2, 7]
+    >>> model = [2.5, 0.0, 2, 8]
+    >>> rmse(obs, model)
+    0.61237243569579447
+    >>> obs = [[0.5, 1],[-1, 1],[7, -6]]
+    >>> model = [[0, 2],[-1, 2],[8, -5]]
+    >>> rmse(obs, model)
+    0.84162541153017323
+
+    """
+    return np.sqrt(mean_squared_error(obs, model))
 
 def both_valid(x, y):
     """
