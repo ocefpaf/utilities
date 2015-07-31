@@ -6,6 +6,7 @@ import fnmatch
 import warnings
 from glob import glob
 from io import BytesIO
+from HTMLParser import HTMLParser
 from datetime import datetime, timedelta
 try:
     from urllib import urlopen
@@ -305,10 +306,13 @@ def _extract_columns(name, cube):
     following SOS boilerplate.
 
     """
-    try:
-        station = cube.attributes['abstract']
-    except KeyError:
+    station = cube.attributes.get('abstract', None)
+    if not station:
         station = name.replace('.', '_')
+
+    parser = HTMLParser()
+    station = parser.unescape(station)
+
     sensor = 'NA'
     lon = cube.coord(axis='X').points[0]
     lat = cube.coord(axis='Y').points[0]
