@@ -1,7 +1,12 @@
 Changelog
 ---------
 
+Version 0.2.6
+
+* Parse HTML station names strings.
+
 Version 0.2.5
+
 * Added more CF-names to the velocity list.
 * Added ioos module with system-test functions.
 * Replaced `get_coops_longName()` with `get_coops_metadata()`
