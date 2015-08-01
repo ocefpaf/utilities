@@ -2,4 +2,5 @@ iris
 lxml
 pandas
 requests
+matplotlib
 beautifulsoup4
