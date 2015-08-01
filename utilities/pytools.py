@@ -3,6 +3,7 @@ from __future__ import division, absolute_import
 # Standard Library.
 import os
 import signal
+import subprocess
 from contextlib import contextmanager
 try:
     from urllib import urlopen
@@ -14,6 +15,7 @@ except ImportError:
 # Scientific stack.
 import numpy as np
 import numpy.ma as ma
+import matplotlib.pyplot as plt
 from pandas import read_csv
 from netCDF4 import Dataset, date2index, num2date
 
@@ -37,7 +39,9 @@ __all__ = ['rot2d',
            'parse_url',
            'url_lister',
            'time_limit',
-           'TimeoutException']
+           'TimeoutException',
+           'show_qr',
+           'get_nbviewer']
 
 
 # ROMS.
@@ -372,6 +376,38 @@ def url_lister(url):
     return urls
 
 
+def get_nbviewer(notebook='00-inundation_secoora.ipynb'):
+    """
+    Return a nbviewer link for a given notebook in the current
+    repository.
+
+    """
+    # User and repository names.
+    out = subprocess.Popen(['git', 'remote', 'show', 'origin', '-n'],
+                           stdout=subprocess.PIPE).stdout.read().decode()
+    out = out.split('\n')
+    out = [l.strip().split(':')[-1] for l in out if
+           l.strip().startswith('Fetch')]
+    user, repo = out[0].split('/')
+    repo = repo.split('.git')[0]
+    # Branch name.
+    out = subprocess.Popen(['git', 'branch'],
+                           stdout=subprocess.PIPE).stdout.read().decode()
+    out = out.split('\n')
+    branch = [l.split()[-1] for l in out if l.strip().startswith('*')][0]
+    # Path
+    path = os.path.abspath(notebook)
+    path = ''.join(path.split(repo, 1)[-1])
+    # URL.
+    params = dict(user=user,
+                  repo=repo,
+                  branch=branch,
+                  path=path)
+    url = ('http://nbviewer.ipython.org/github/'
+           '{user}/{repo}/blob/{branch}{path}').format
+    return url(**params)
+
+
 # Misc.
 @contextmanager
 def time_limit(seconds=10):
@@ -409,6 +445,20 @@ class TimeoutException(Exception):
     TimeoutException('Timed out!',)
     """
     pass
+
+
+def show_qr(text):
+    import qrcode
+    qr = qrcode.QRCode(version=1,
+                       error_correction=qrcode.constants.ERROR_CORRECT_L,
+                       box_size=10, border=4)
+    qr.add_data(text)
+    qr.make(fit=True)
+    img = qr.make_image()
+    fig, ax = plt.subplots()
+    ax.imshow(img)
+    ax.axis('off')
+    ax.set_title("Notebook nbviewer link")
 
 
 if __name__ == '__main__':
