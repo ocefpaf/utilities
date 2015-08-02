@@ -687,6 +687,16 @@ def nc2df(fname):
     return df
 
 
+def fetch_range(start=datetime(2014, 7, 1, 12), days=7, tzinfo=pytz.utc):
+    """
+    For hurricane Arthur week use `start=datetime(2014, 7, 0, 12)`.
+
+    """
+    start = start.replace(tzinfo=tzinfo)
+    stop = start + timedelta(days=days)
+    return start, stop
+
+
 if __name__ == '__main__':
     import doctest
     doctest.testmod()
