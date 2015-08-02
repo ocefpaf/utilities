@@ -40,7 +40,8 @@ __all__ = ['rot2d',
            'time_limit',
            'TimeoutException',
            'make_qr',
-           'nbviewer_link']
+           'nbviewer_link',
+           'save_html']
 
 
 # ROMS.
@@ -190,6 +191,11 @@ def to_html(df, css=style):
         style = """<style>{}</style>""".format(f.read())
     table = dict(style=style, table=df.to_html())
     return HTML('{style}<div class="datagrid">{table}</div>'.format(**table))
+
+
+def save_html(fname, HTML):
+    with open(fname, 'w') as f:
+        f.writelines(HTML.data)
 
 
 # Mapping
