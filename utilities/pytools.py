@@ -15,7 +15,6 @@ except ImportError:
 # Scientific stack.
 import numpy as np
 import numpy.ma as ma
-import matplotlib.pyplot as plt
 from pandas import read_csv
 from netCDF4 import Dataset, date2index, num2date
 
@@ -40,8 +39,8 @@ __all__ = ['rot2d',
            'url_lister',
            'time_limit',
            'TimeoutException',
-           'show_qr',
-           'get_nbviewer']
+           'make_qr',
+           'nbviewer_link']
 
 
 # ROMS.
@@ -376,7 +375,7 @@ def url_lister(url):
     return urls
 
 
-def get_nbviewer(notebook='00-inundation_secoora.ipynb'):
+def nbviewer_link(notebook):
     """
     Return a nbviewer link for a given notebook in the current
     repository.
@@ -447,19 +446,14 @@ class TimeoutException(Exception):
     pass
 
 
-def show_qr(text):
+def make_qr(text):
     import qrcode
     qr = qrcode.QRCode(version=1,
                        error_correction=qrcode.constants.ERROR_CORRECT_L,
                        box_size=10, border=4)
     qr.add_data(text)
     qr.make(fit=True)
-    img = qr.make_image()
-    fig, ax = plt.subplots()
-    ax.imshow(img)
-    ax.axis('off')
-    ax.set_title("Notebook nbviewer link")
-
+    return qr.make_image()
 
 if __name__ == '__main__':
     import doctest

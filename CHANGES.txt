@@ -4,7 +4,7 @@ Changelog
 Version 0.2.6
 
 * Parse HTML station names strings.
-* Added `show_qr()`,`get_nbviewer()`, and filter_series()`.
+* Added `make_qr()`, `nbviewer_link()`, and filter_series()`.
 
 Version 0.2.5
 
