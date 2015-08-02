@@ -4,8 +4,9 @@ Changelog
 Version 0.2.6
 
 * Parse HTML station names strings.
-* Added `fetch_range()`, `show_qr()`,`get_nbviewer()`,
-  `start_log()`, and filter_series()`.
+* Added `fetch_range()`, `show_qr()`,`get_nbviewer()`, `save_html()`,
+  `start_log()`, `apply_skill()`, and filter_series()`.
+* Added Taylor Diagram class.
 
 Version 0.2.5
 
