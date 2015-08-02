@@ -49,7 +49,9 @@ __all__ = ['get_model_name',
            'nc2df',
            'CF_names',
            'titles',
-           'fix_url']
+           'fix_url',
+           'fetch_range',
+           'start_log']
 
 
 salinity = ['sea_water_salinity',
@@ -687,7 +689,7 @@ def nc2df(fname):
     return df
 
 
-def fetch_range(start=datetime(2014, 7, 1, 12), days=7, tzinfo=pytz.utc):
+def fetch_range(start=datetime(2014, 7, 1, 12), days=6, tzinfo=pytz.utc):
     """
     For hurricane Arthur week use `start=datetime(2014, 7, 0, 12)`.
 
@@ -696,6 +698,51 @@ def fetch_range(start=datetime(2014, 7, 1, 12), days=7, tzinfo=pytz.utc):
     stop = start + timedelta(days=days)
     return start, stop
 
+
+def _reload_log():
+    """IPython workaround."""
+    import logging as log
+    reload(log)
+    return log
+
+
+def start_log(start, stop, bbox):
+    log = _reload_log()
+    import os
+    import pyoos
+    import owslib
+
+    run_name = '{:%Y-%m-%d}'.format(stop)
+
+    if not os.path.exists(run_name):
+        os.makedirs(run_name)
+        msg = 'Saving data inside directory {}'.format(run_name)
+    else:
+        msg = 'Overwriting the data inside directory {}'.format(run_name)
+
+    fmt = '{:*^64}'.format
+    log.captureWarnings(True)
+    LOG_FILENAME = 'log.txt'
+    LOG_FILENAME = os.path.join(run_name, LOG_FILENAME)
+    log.basicConfig(filename=LOG_FILENAME,
+                    filemode='w',
+                    format='%(asctime)s %(levelname)s: %(message)s',
+                    datefmt='%I:%M:%S',
+                    level=log.INFO,
+                    stream=None)
+
+    log.info(fmt(msg))
+    log.info(fmt(' Run information '))
+    log.info('Run date: {:%Y-%m-%d %H:%M:%S}'.format(datetime.utcnow()))
+    log.info('Download start: {:%Y-%m-%d %H:%M:%S}'.format(start))
+    log.info('Download stop: {:%Y-%m-%d %H:%M:%S}'.format(stop))
+    log.info('Bounding box: {0:3.2f}, {1:3.2f},'
+             '{2:3.2f}, {3:3.2f}'.format(*bbox))
+    log.info(fmt(' Software version '))
+    log.info('Iris version: {}'.format(iris.__version__))
+    log.info('owslib version: {}'.format(owslib.__version__))
+    log.info('pyoos version: {}'.format(pyoos.__version__))
+    return log
 
 if __name__ == '__main__':
     import doctest
