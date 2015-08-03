@@ -19,7 +19,7 @@ import numpy as np
 from owslib import fes
 from owslib.swe.sensor.sml import SensorML
 from pandas import Panel, DataFrame, read_csv, concat
-from netCDF4 import MFDataset, date2index, num2date
+from netCDF4 import Dataset, MFDataset, date2index, num2date
 
 import iris
 from iris.pandas import as_data_frame
@@ -51,7 +51,8 @@ __all__ = ['get_model_name',
            'titles',
            'fix_url',
            'fetch_range',
-           'start_log']
+           'start_log',
+           'is_station']
 
 
 salinity = ['sea_water_salinity',
@@ -349,6 +350,31 @@ def secoora2df(buoys, varname):
     df.rename(columns=columns, inplace=True)
     df.set_index('name', inplace=True)
     return df
+
+
+def is_station(url):
+    """
+    Return True is cdm_data_type exists and is equal to 'station;
+
+    Examples
+    --------
+    >>> url = ('http://thredds.cdip.ucsd.edu/thredds/dodsC/'
+    ...        'cdip/archive/144p1/144p1_historic.nc')
+    >>> is_station(url)
+    True
+    >>> url = ("http://comt.sura.org/thredds/dodsC/data/comt_1_archive/"
+    ...        "inundation_tropical/VIMS_SELFE/"
+    ...        "Hurricane_Ike_2D_final_run_without_waves")
+    >>> is_station(url)
+    False
+
+    """
+    nc = Dataset(url)
+    station = False
+    if hasattr(nc, 'cdm_data_type'):
+        if nc.cdm_data_type.lower() == 'station':
+            station = True
+    return station
 
 
 def secoora_buoys():
