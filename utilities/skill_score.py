@@ -71,12 +71,14 @@ def apply_skill(dfs, function, remove_mean=True, filter_tides=False):
             df = df.apply(low_pass)
         skill = dict()
         obs = df.pop('OBS_DATA')
-        # No observations.
         if obs.isnull().all():
+            # No observations.
+            skills.update({station: np.NaN})
             continue
         for model, y in df.iteritems():
-            # No model.
+            # No models.
             if y.isnull().all():
+                skills.update({station: np.NaN})
                 continue
             mask = both_valid(obs, y)
             x, y = obs[mask], y[mask]
@@ -88,10 +90,7 @@ def apply_skill(dfs, function, remove_mean=True, filter_tides=False):
                 ret = np.NaN
             skill.update({model: ret})
         skills.update({station: skill})
-    df = DataFrame.from_dict(skills)
-
-    # Filter out stations with no valid comparison.
-    return df.dropna(how='all', axis=1)
+    return DataFrame.from_dict(skills)
 
 
 def low_pass(series, window_size=193, T=40, dt=360):
