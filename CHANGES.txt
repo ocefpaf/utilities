@@ -3,6 +3,7 @@ Changelog
 
 Version 0.3.0
 
+* Added a new module for Quality Assurance and Quality Conttol `qaqc.py` 
 * Added `is_station()` (faster checks `is_model()`).
 
 Version 0.2.6
