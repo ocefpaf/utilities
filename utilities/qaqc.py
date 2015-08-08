@@ -4,13 +4,14 @@ from pandas.tseries.frequencies import to_offset
 from pandas import DatetimeIndex, Series, rolling_median
 
 
-__all__ = ['is_monotonicly_increasing',
+__all__ = ['is_monotonically_increasing',
            'has_time_gaps',
            'threshold',
-           'filter_spikes']
+           'filter_spikes',
+           'tukey53H']
 
 
-def is_monotonicly_increasing(times):
+def is_monotonically_increasing(times):
     """
     Check if a given list or array of datetime-like objects is
     monotonically increasing.
@@ -19,10 +20,10 @@ def is_monotonicly_increasing(times):
     --------
     >>> from pandas import date_range
     >>> times = date_range('1980-01-19', periods=10)
-    >>> is_monotonicly_increasing(times)
+    >>> is_monotonically_increasing(times)
     True
     >>> import numpy as np
-    >>> is_monotonicly_increasing(np.r_[times[-2:-1], times])
+    >>> is_monotonically_increasing(np.r_[times[-2:-1], times])
     False
     """
     return all(x < y for x, y in zip(times, times[1:]))
@@ -123,6 +124,82 @@ def filter_spikes(series, window_size=3, threshold=3):
     outlier_idx = ndiff > threshold
     series[outlier_idx] = np.NaN
     return series
+
+
+def _high_pass(data, alpha=0.5):
+    """
+    Runs a high pass RC filter over the given data.
+
+    Parameters
+    ----------
+    data : array_like
+
+    alpha : float
+            Smoothing factor between 0.0 (exclusive) and 1.0 (inclusive).
+            A lower value means more filtering.  A value of 1.0 equals no
+            filtering. Defaults is 0.5.
+
+    Returns
+    -------
+    hpf : array_like
+          Filtered data.
+
+    Based on http://en.wikipedia.org/wiki/High-pass_filter
+
+    """
+    mean = data.mean()
+    data = data - mean
+    hpf = data.copy()
+    for k in range(1, len(data)):
+        hpf[k] = alpha * hpf[k-1] + alpha * (data[k] - data[k-1])
+    return hpf + mean
+
+
+def tukey53H(data, k=1.5):
+    """
+    Flags suspicious spikes values using Tukey 53H.
+
+    References
+    ----------
+    .. [1] Goring, Derek G., and Vladimir I. Nikora. "Despiking acoustic
+    Doppler velocimeter data." Journal of Hydraulic Engineering 128.1 (2002):
+    117-126.  http://dx.doi.org/10.1061/(ASCE)0733-9429(2002)128:1(117)
+
+    Examples
+    --------
+    >>> from pandas import Series, date_range
+    >>> series = [33.43, 33.45, 34.45, 90.0, 35.67, 34.9, 43.5, 34.6, 33.7]
+    >>> series = Series(series, index=date_range('1980-01-19',
+    ...                 periods=len(series)))
+    >>> tukey53H(series.values, k=1.5)
+    array([False, False, False,  True, False, False, False, False, False], \
+dtype=bool)
+
+    """
+    data = np.asanyarray(data)
+
+    data = _high_pass(data, 0.99)
+    data = data - data.mean()
+
+    N = len(data)
+    stddev = data.std()
+
+    u1 = np.zeros_like(data)
+    for n in range(N-4):
+        if data[n:n+5].any():
+            u1[n+2] = np.median(data[n:n+5])
+
+    u2 = np.zeros_like(data)
+    for n in range(N-2):
+        if u1[n:n+3].any():
+            u2[n+1] = np.median(u1[n:n+3])
+
+    u3 = np.zeros_like(data)
+    u3[1:-1] = 0.25*(u2[:-2] + 2*u2[1:-1] + u2[2:])
+
+    delta = np.abs(data-u3)
+
+    return delta > k*stddev
 
 if __name__ == '__main__':
     import doctest
