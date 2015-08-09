@@ -4,36 +4,21 @@ from pandas.tseries.frequencies import to_offset
 from pandas import DatetimeIndex, Series, rolling_median
 
 
-__all__ = ['is_monotonically_increasing',
-           'has_time_gaps',
-           'threshold',
+__all__ = ['has_time_gaps',
+           'is_monotonically_increasing',
+           'is_flatline',
+           'is_spike',
+           'threshold_series',
            'filter_spikes',
            'tukey53H']
 
 
-def is_monotonically_increasing(times):
-    """
-    Check if a given list or array of datetime-like objects is
-    monotonically increasing.
-
-    Examples
-    --------
-    >>> from pandas import date_range
-    >>> times = date_range('1980-01-19', periods=10)
-    >>> is_monotonically_increasing(times)
-    True
-    >>> import numpy as np
-    >>> is_monotonically_increasing(np.r_[times[-2:-1], times])
-    False
-    """
-    return all(x < y for x, y in zip(times, times[1:]))
-
-
 def has_time_gaps(times, freq):
     """
-    Check for gaps in a series time-stamp. The `freq` can be a string or a
-    pandas offset object.  Note the freq cannot be an ambiguous offset like
-    week, months, etc.
+    Check for gaps in a series time-stamp `times`. The `freq` can be a string
+    or a pandas offset object.  Note the `freq` cannot be an ambiguous offset
+    (like week, months, etc), in those case reduce it to the smallest
+    unambiguous unit (i.e.: 1 month -> 30 days).
 
     Example
     -------
@@ -54,29 +39,117 @@ def has_time_gaps(times, freq):
     return (np.diff(times) > freq.delta.to_timedelta64()).any()
 
 
-def threshold(series, vmin=None, vmax=None):
+def is_monotonically_increasing(times):
+    """
+    Check if a given list or array of datetime-like objects is
+    monotonically increasing.
+
+    Examples
+    --------
+    >>> from pandas import date_range
+    >>> times = date_range('1980-01-19', periods=10)
+    >>> is_monotonically_increasing(times)
+    True
+    >>> import numpy as np
+    >>> is_monotonically_increasing(np.r_[times[-2:-1], times])
+    False
+    """
+    return all(x < y for x, y in zip(times, times[1:]))
+
+
+def is_flatline(series, reps=10, eps=None):
+    """
+    Check for consecutively repeated values (`reps`) in `series` within a
+    tolerance `eps`.
+
+    Examples
+    --------
+    >>> series = np.r_[np.random.rand(10), [10]*15, np.random.rand(10)]
+    >>> is_flatline(series, reps=10)
+    array([False, False, False, False, False, False, False, False, False,
+           False,  True,  True,  True,  True,  True,  True,  True,  True,
+            True,  True,  True,  True,  True,  True,  True, False, False,
+           False, False, False, False, False, False, False, False], dtype=bool)
+
+    """
+    series = np.asanyarray(series)
+
+    if not eps:
+        eps = np.finfo(float).eps
+
+    if reps < 2:
+        reps = 2
+
+    mask = np.zeros_like(series, dtype='bool')
+
+    flatline = 1
+    for k, current in enumerate(series):
+        if np.abs(series[k-1] - current) < eps:
+            flatline += 1
+        else:
+            if flatline >= reps:
+                mask[k-flatline:k] = True
+            flatline = 1
+    return mask
+
+
+def is_spike(series, window_size=3, threshold=3, scale=True):
+    """
+    Flags spikes in an array-like object using a median filter of `window_size`
+    and a `threshold` for the median difference.  If `scale=False` the
+    differences are not scale by the data standard deviation and the masking
+    is "aggressive."
+
+    Examples
+    --------
+    >>> from pandas import Series, date_range
+    >>> series = [33.43, 33.45, 34.45, 90.0, 35.67, 34.9, 43.5, 34.6, 33.7]
+    >>> series = Series(series, index=date_range('1980-01-19',
+    ...                 periods=len(series)))
+    >>> series[is_spike(series, window_size=3, threshold=3, scale=False)]
+    1980-01-22    90.0
+    1980-01-25    43.5
+    dtype: float64
+    >>> series[is_spike(series, window_size=3, threshold=3, scale=True)]
+    1980-01-22    90
+    Freq: D, dtype: float64
+
+    """
+    # bfill+ffil needs a series and won't affect the median.
+    series = Series(series)
+    medians = rolling_median(series, window=window_size, center=True)
+    medians = medians.fillna(method='bfill').fillna(method='ffill')
+    difference = np.abs(series - medians).values
+    if scale:
+        return difference > (threshold*difference.std())
+    return difference > threshold
+
+
+def threshold_series(series, vmin=None, vmax=None):
     """
     Threshold an series by flagging with NaN values below `vmin` and above
     `vmax`.
 
     Examples
     --------
-    >>> series = [0.1, 20, 35.5, 34.9, 43.5, 34.6, 33.7]
-    >>> threshold(series, vmin=30, vmax=40)
-    masked_array(data = [-- -- 35.5 34.9 -- 34.6 33.7],
-                 mask = [ True  True False False  True False False],
+    >>> series = [0.1, 20, 30, 35.5, 34.9, 43.5, 34.6, 40]
+    >>> threshold_series(series, vmin=30, vmax=40)
+    masked_array(data = [-- -- 30.0 35.5 34.9 -- 34.6 40.0],
+                 mask = [ True  True False False False  True False False],
            fill_value = 1e+20)
     <BLANKLINE>
     >>> from pandas import Series, date_range
-    >>> series = Series(series, index=date_range('1980-01-19', periods=7))
-    >>> threshold(series, vmin=30, vmax=40)
+    >>> series = Series(series, index=date_range('1980-01-19',
+    ...                 periods=len(series)))
+    >>> threshold_series(series, vmin=30, vmax=40)
     1980-01-19     NaN
     1980-01-20     NaN
-    1980-01-21    35.5
-    1980-01-22    34.9
-    1980-01-23     NaN
-    1980-01-24    34.6
-    1980-01-25    33.7
+    1980-01-21    30.0
+    1980-01-22    35.5
+    1980-01-23    34.9
+    1980-01-24     NaN
+    1980-01-25    34.6
+    1980-01-26    40.0
     Freq: D, dtype: float64
 
     """
@@ -93,7 +166,7 @@ def threshold(series, vmin=None, vmax=None):
     return masked
 
 
-def filter_spikes(series, window_size=3, threshold=3):
+def filter_spikes(series, window_size=3, threshold=3, scale=True):
     """
     Filter an array-like object using a median filter and a `threshold`
     for the median difference.
@@ -104,7 +177,7 @@ def filter_spikes(series, window_size=3, threshold=3):
     >>> series = [33.43, 33.45, 34.45, 90.0, 35.67, 34.9, 43.5, 34.6, 33.7]
     >>> series = Series(series, index=date_range('1980-01-19',
     ...                 periods=len(series)))
-    >>> filter_spikes(series, window_size=3, threshold=3)
+    >>> filter_spikes(series)
     1980-01-19    33.43
     1980-01-20    33.45
     1980-01-21    34.45
@@ -117,11 +190,10 @@ def filter_spikes(series, window_size=3, threshold=3):
     Freq: D, dtype: float64
 
     """
-    medians = rolling_median(series, window=window_size, center=True)
-    medians = medians.fillna(method='bfill').fillna(method='ffill')
-    difference = np.abs(series - medians)
-    ndiff = difference / difference.std()
-    outlier_idx = ndiff > threshold
+    outlier_idx = is_spike(series, window_size=window_size,
+                           threshold=threshold, scale=scale)
+    if not isinstance(series, Series):
+        series = np.asanyarray(series)
     series[outlier_idx] = np.NaN
     return series
 
@@ -155,9 +227,9 @@ def _high_pass(data, alpha=0.5):
     return hpf + mean
 
 
-def tukey53H(data, k=1.5):
+def tukey53H(series, k=1.5):
     """
-    Flags suspicious spikes values using Tukey 53H.
+    Flags suspicious spikes values in `series` using Tukey 53H criteria.
 
     References
     ----------
@@ -171,33 +243,33 @@ def tukey53H(data, k=1.5):
     >>> series = [33.43, 33.45, 34.45, 90.0, 35.67, 34.9, 43.5, 34.6, 33.7]
     >>> series = Series(series, index=date_range('1980-01-19',
     ...                 periods=len(series)))
-    >>> tukey53H(series.values, k=1.5)
-    array([False, False, False,  True, False, False, False, False, False], \
-dtype=bool)
+    >>> series[tukey53H(series, k=1.5)]
+    1980-01-22    90
+    Freq: D, dtype: float64
 
     """
-    data = np.asanyarray(data)
+    series = np.asanyarray(series)
 
-    data = _high_pass(data, 0.99)
-    data = data - data.mean()
+    series = _high_pass(series, 0.99)
+    series = series - series.mean()
 
-    N = len(data)
-    stddev = data.std()
+    N = len(series)
+    stddev = series.std()
 
-    u1 = np.zeros_like(data)
+    u1 = np.zeros_like(series)
     for n in range(N-4):
-        if data[n:n+5].any():
-            u1[n+2] = np.median(data[n:n+5])
+        if series[n:n+5].any():
+            u1[n+2] = np.median(series[n:n+5])
 
-    u2 = np.zeros_like(data)
+    u2 = np.zeros_like(series)
     for n in range(N-2):
         if u1[n:n+3].any():
             u2[n+1] = np.median(u1[n:n+3])
 
-    u3 = np.zeros_like(data)
+    u3 = np.zeros_like(series)
     u3[1:-1] = 0.25*(u2[:-2] + 2*u2[1:-1] + u2[2:])
 
-    delta = np.abs(data-u3)
+    delta = np.abs(series-u3)
 
     return delta > k*stddev
 

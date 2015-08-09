@@ -3,8 +3,10 @@ Changelog
 
 Version 0.3.0
 
-* Added a new module for Quality Assurance and Quality Conttol `qaqc.py` 
-* Added `is_station()` (faster checks `is_model()`).
+* Added a new module for Quality Assurance and Quality Control `qaqc.py`:
+  `has_time_gaps()`, `is_monotonically_increasing()`, `is_flatline()`,
+  `is_spike()`, `threshold_series()`, `filter_spikes()`, and `tukey53H()`.
+* Added `is_station()` for faster checks than`is_model()`.
 
 Version 0.2.6
 
