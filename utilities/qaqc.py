@@ -39,22 +39,21 @@ def has_time_gaps(times, freq):
     return (np.diff(times) > freq.delta.to_timedelta64()).any()
 
 
-def is_monotonically_increasing(times):
+def is_monotonically_increasing(series):
     """
-    Check if a given list or array of datetime-like objects is
-    monotonically increasing.
+    Check if a given list or array is monotonically increasing.
 
     Examples
     --------
     >>> from pandas import date_range
     >>> times = date_range('1980-01-19', periods=10)
-    >>> is_monotonically_increasing(times)
+    >>> all(is_monotonically_increasing(times))
     True
     >>> import numpy as np
-    >>> is_monotonically_increasing(np.r_[times[-2:-1], times])
+    >>> all(is_monotonically_increasing(np.r_[times[-2:-1], times]))
     False
     """
-    return all(x < y for x, y in zip(times, times[1:]))
+    return [x < y for x, y in zip(series, series[1:])]
 
 
 def is_flatline(series, reps=10, eps=None):
