@@ -633,17 +633,17 @@ def get_coops_metadata(station):
     return long_name, station_id
 
 
-def coops2df(collector, coops_id):
+def coops2df(collector, coops_id, df_name=None):
     """
     Request CSV response from SOS and convert to Pandas dataframe.
 
     """
     collector.features = [coops_id]
-    long_name, station_id = get_coops_metadata(coops_id)
     response = collector.raw(responseFormat="text/csv")
     kw = dict(parse_dates=True, index_col='date_time')
     data_df = read_csv(BytesIO(response.encode('utf-8')), **kw)
-    data_df.name = long_name
+    if df_name:
+        data_df.name = df_name
     return data_df
 
 
