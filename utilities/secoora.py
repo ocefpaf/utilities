@@ -617,12 +617,12 @@ def get_coops_metadata(station):
     url = parse_url(url)
     xml = etree.parse(urlopen(url))
     root = SensorML(xml)
-    if len(root.members) > 1:
+    if not root.members or len(root.members) > 1:
         msg = "Expected 1 member, got {}".format
         raise ValueError(msg(len(root.members)))
     system = root.members[0]
 
-    # NOTE:  Some metadata of interest.
+    # NOTE: Some metadata of interest.
     # system.description
     # short_name = _get_value(system.identifiers, name='shortName')
     # [c.values() for c in system.components]
