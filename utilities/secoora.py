@@ -290,7 +290,7 @@ def get_model_name(cube, url):
     url = parse_url(url)
     # [model_full_name]: if there is no title assign the URL.
     try:
-        model_full_name = cube.attributes['title']
+        model_full_name = cube.attributes.get('title', url)
     except AttributeError:
         model_full_name = url
     # [mod_name]: first searches the titles dictionary, if not try to guess.
