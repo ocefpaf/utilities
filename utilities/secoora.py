@@ -41,6 +41,7 @@ __all__ = ['get_model_name',
            'load_secoora_ncs',
            'fes_date_filter',
            'service_urls',
+           'collector2table',
            'sos_request',
            'get_ndbc_longname',
            'get_coops_metadata',
@@ -526,6 +527,39 @@ def service_urls(records, service='odp:url'):
     urls = sorted(set(urls))
     return urls
 
+
+def collector2table(collector):
+    """
+    collector2table return a station table as a DataFrame.
+    columns are station, sensor, lon, lat, and the index is the station
+    number.
+
+    This is a substitute for `sos_request`.
+
+    """
+    # This accepts only 1-day request, but since we only want the
+    # stations available we use end=start and then re-add the proper
+    # end date into the collector.
+    start = collector.start_time
+    stop = collector.end_time
+    response = collector.filter(end=start).raw(responseFormat="text/csv")
+    df = read_csv(BytesIO(response.encode('utf-8')),
+                  parse_dates=True)
+    columns = {'sensor_id': 'sensor',
+               'station_id': 'station',
+               'latitude (degree)': 'lat',
+               'longitude (degree)': 'lon'}
+    df.rename(columns=columns, inplace=True)
+    df['sensor'] = [s.split(':')[-1] for s in df['sensor']]
+    df['station'] = [s.split(':')[-1] for s in df['station']]
+
+    df = df[['station', 'sensor', 'lon', 'lat']]
+    g = df.groupby('station')
+    df = dict()
+    for station in g.groups.keys():
+        df.update({station: g.get_group(station).irow(0)})
+    collector.end_time = stop
+    return DataFrame.from_dict(df).T
 
 def sos_request(url='opendap.co-ops.nos.noaa.gov/ioos-dif-sos/SOS', **kw):
     """
