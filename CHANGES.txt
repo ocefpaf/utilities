@@ -7,6 +7,11 @@ Version 0.3.0
   `has_time_gaps()`, `is_monotonically_increasing()`, `is_flatline()`,
   `is_spike()`, `threshold_series()`, `filter_spikes()`, and `tukey53H()`.
 * Added `is_station()` for faster checks than`is_model()`.
+* Several bug fixes (See https://github.com/ocefpaf/boston_light_swim/issues/5)
+* Deprecate `sos_request()` in favor of `collector2table()` to get a list of
+  available stations in a `pyoos` `collector` object.
+* Renamed `coops2df` to the more general `pyoos2df`
+  (downloads both Coops and NDBC).
 
 Version 0.2.6
 
