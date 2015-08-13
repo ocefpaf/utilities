@@ -2,6 +2,7 @@ from __future__ import division, absolute_import
 
 # Standard Library.
 import os
+import copy
 import fnmatch
 import warnings
 from glob import glob
@@ -17,6 +18,7 @@ except ImportError:
 import pytz
 import numpy as np
 from owslib import fes
+from owslib.ows import ExceptionReport
 from owslib.swe.sensor.sml import SensorML
 from pandas import Panel, DataFrame, read_csv, concat
 from netCDF4 import Dataset, MFDataset, date2index, num2date
@@ -41,10 +43,11 @@ __all__ = ['get_model_name',
            'load_secoora_ncs',
            'fes_date_filter',
            'service_urls',
+           'collector2table',
            'sos_request',
            'get_ndbc_longname',
            'get_coops_metadata',
-           'coops2df',
+           'pyoos2df',
            'ndbc2df',
            'nc2df',
            'CF_names',
@@ -527,6 +530,40 @@ def service_urls(records, service='odp:url'):
     return urls
 
 
+def collector2table(collector):
+    """
+    collector2table return a station table as a DataFrame.
+    columns are station, sensor, lon, lat, and the index is the station
+    number.
+
+    This is a substitute for `sos_request`.
+
+    """
+    # This accepts only 1-day request, but since we only want the
+    # stations available we try again with end=start.
+    c = copy.copy(collector)
+    try:
+        response = c.raw(responseFormat="text/csv")
+    except ExceptionReport:
+        response = c.filter(end=c.start_time).raw(responseFormat="text/csv")
+    df = read_csv(BytesIO(response.encode('utf-8')),
+                  parse_dates=True)
+    columns = {'sensor_id': 'sensor',
+               'station_id': 'station',
+               'latitude (degree)': 'lat',
+               'longitude (degree)': 'lon'}
+    df.rename(columns=columns, inplace=True)
+    df['sensor'] = [s.split(':')[-1] for s in df['sensor']]
+    df['station'] = [s.split(':')[-1] for s in df['station']]
+
+    df = df[['station', 'sensor', 'lon', 'lat']]
+    g = df.groupby('station')
+    df = dict()
+    for station in g.groups.keys():
+        df.update({station: g.get_group(station).irow(0)})
+    return DataFrame.from_dict(df).T
+
+
 def sos_request(url='opendap.co-ops.nos.noaa.gov/ioos-dif-sos/SOS', **kw):
     """
     Examples
@@ -633,26 +670,47 @@ def get_coops_metadata(station):
     return long_name, station_id
 
 
-def coops2df(collector, coops_id, df_name=None):
+def pyoos2df(collector, station_id, df_name=None):
     """
     Request CSV response from SOS and convert to Pandas dataframe.
 
     """
-    collector.features = [coops_id]
-    response = collector.raw(responseFormat="text/csv")
-    kw = dict(parse_dates=True, index_col='date_time')
-    data_df = read_csv(BytesIO(response.encode('utf-8')), **kw)
+    collector.features = [station_id]
+    try:
+        response = collector.raw(responseFormat="text/csv")
+        kw = dict(parse_dates=True, index_col='date_time')
+        df = read_csv(BytesIO(response.encode('utf-8')), **kw)
+    except requests.exceptions.ReadTimeout:
+        df = ndbc2df(collector, station_id)
+    # FIXME: Workaround to get only 1 sensor.
+    df = df.reset_index()
+    df = df.drop_duplicates(cols='date_time').set_index('date_time')
     if df_name:
-        data_df.name = df_name
-    return data_df
+        df.name = df_name
+    return df
 
 
 def ndbc2df(collector, ndbc_id):
     """
-    Request CSV response from NDBC and convert to Pandas dataframe.
+    Ugly hack because `collector.raw(responseFormat="text/csv")`
+    Usually times out.
 
     """
-    uri = 'http://dods.ndbc.noaa.gov/thredds/dodsC/data/adcp'
+    # FIXME: Only sea_water_temperature for now.
+    if len(collector.variables) > 1:
+        msg = "Expected only 1 variables to download, got {}".format
+        raise ValueError(msg(collector.variables))
+    if collector.variables[0] == 'sea_water_temperature':
+        columns = 'sea_water_temperature (C)'
+        ncvar = 'sea_surface_temperature'
+        data_type = 'stdmet'
+        # adcp, adcp2, cwind, dart, mmbcur, ocean, oceansites, pwind,
+        # swden, tao-ctd, wlevel, z-hycom
+    else:
+        msg = "Do not know how to download {}".format
+        raise ValueError(msg(collector.variables))
+
+    uri = 'http://dods.ndbc.noaa.gov/thredds/dodsC/data/{}'.format(data_type)
     url = ('%s/%s/' % (uri, ndbc_id))
     urls = url_lister(url)
 
@@ -660,14 +718,15 @@ def ndbc2df(collector, ndbc_id):
     file_list = [filename for filename in fnmatch.filter(urls, filetype)]
     files = [fname.split('/')[-1] for fname in file_list]
     urls = ['%s/%s/%s' % (uri, ndbc_id, fname) for fname in files]
+
     if not urls:
         raise Exception("Cannot find data at {!r}".format(url))
     nc = MFDataset(urls)
 
     kw = dict(calendar='gregorian', select='nearest')
     time_dim = nc.variables['time']
-    dates = num2date(time_dim[:], units=time_dim.units,
-                     calendar=kw['calendar'])
+    time = num2date(time_dim[:], units=time_dim.units,
+                    calendar=kw['calendar'])
 
     idx_start = date2index(collector.start_time.replace(tzinfo=None),
                            time_dim, **kw)
@@ -677,21 +736,13 @@ def ndbc2df(collector, ndbc_id):
         raise Exception("No data within time range"
                         " {!r} and {!r}".format(collector.start_time,
                                                 collector.end_time))
-    dir_dim = nc.variables['water_dir'][idx_start:idx_stop, ...].squeeze()
-    speed_dim = nc.variables['water_spd'][idx_start:idx_stop, ...].squeeze()
-    if dir_dim.ndim != 1:
-        dir_dim = dir_dim[:, 0]
-        speed_dim = speed_dim[:, 0]
+    data = nc.variables[ncvar][idx_start:idx_stop, ...].squeeze()
+
     time_dim = nc.variables['time']
-    dates = dates[idx_start:idx_stop].squeeze()
-    data = dict()
-    data['sea_water_speed (cm/s)'] = speed_dim
-    col = 'direction_of_sea_water_velocity (degree)'
-    data[col] = dir_dim
-    time = dates
-    columns = ['sea_water_speed (cm/s)',
-               'direction_of_sea_water_velocity (degree)']
-    return DataFrame(data=data, index=time, columns=columns)
+    time = time[idx_start:idx_stop].squeeze()
+    df = DataFrame(data=data, index=time, columns=[columns])
+    df.index.name = 'date_time'
+    return df
 
 
 def nc2df(fname):
