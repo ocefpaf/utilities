@@ -424,7 +424,7 @@ def _secoora_buoys():
     connection = urlopen(thredds)
     page = connection.read()
     connection.close()
-    soup = BeautifulSoup(page)
+    soup = BeautifulSoup(page, "lxml")
     base_url = "http://129.252.139.124/thredds/dodsC"
     for a in soup.find_all("a"):
         href = a.get('href')
@@ -617,7 +617,7 @@ def get_ndbc_longname(station):
     params = dict(station=station)
     r = requests.get(url, params=params)
     r.raise_for_status()
-    soup = BeautifulSoup(r.content)
+    soup = BeautifulSoup(r.content, "lxml")
     # NOTE: Should be only one!
     long_name = soup.findAll("h1")[0]
     long_name = long_name.text.split(' - ')[1].strip()
