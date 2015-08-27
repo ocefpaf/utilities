@@ -7,7 +7,10 @@ import fnmatch
 import warnings
 from glob import glob
 from io import BytesIO
-from HTMLParser import HTMLParser
+try:
+    from HTMLParser import HTMLParser
+except ImportError:
+    from html.parser import HTMLParser
 from datetime import datetime, timedelta
 try:
     from urllib import urlopen
@@ -778,8 +781,9 @@ def fetch_range(start=datetime(2014, 7, 1, 12), days=6, tzinfo=pytz.utc):
 
 def _reload_log():
     """IPython workaround."""
+    import imp
     import logging as log
-    reload(log)
+    imp.reload(log)
     return log
 
 
