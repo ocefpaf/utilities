@@ -2,5 +2,6 @@ beautifulsoup4
 iris
 lxml
 matplotlib
+numpy
 pandas
 requests
