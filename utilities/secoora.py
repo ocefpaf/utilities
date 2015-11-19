@@ -650,9 +650,11 @@ def get_coops_metadata(station):
     'urn:ioos:station:NOAA.NOS.CO-OPS:8651370'
 
     """
-    url = ('opendap.co-ops.nos.noaa.gov/ioos-dif-sos/SOS?service=SOS&'
+    url = ('opendap.co-ops.nos.noaa.gov/ioos-dif-sos/SOS?'
+           'service=SOS&'
            'request=DescribeSensor&version=1.0.0&'
-           'outputFormat=text/xml;subtype="sensorML/1.0.1"&'
+           'outputFormat=text/xml;'
+           'subtype="sensorML/1.0.1/profiles/ioos_sos/1.0"&'
            'procedure=urn:ioos:station:NOAA.NOS.CO-OPS:%s') % station
     url = parse_url(url)
     xml = etree.parse(urlopen(url))
@@ -668,6 +670,8 @@ def get_coops_metadata(station):
     # [c.values() for c in system.components]
 
     long_name = _get_value(system.identifiers, name='longName')
+    # FIXME: The new CO-OPS standards sucks!
+    long_name = long_name.split('station, ')[-1].strip()
     station_id = _get_value(system.identifiers, name='stationID')
 
     return long_name, station_id
