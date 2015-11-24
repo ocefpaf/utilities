@@ -460,7 +460,7 @@ def load_secoora_ncs(run_name):
             df = nc2df(fname)
             # FIXME: Horrible work around duplicate times.
             if len(df.index.values) != len(np.unique(df.index.values)):
-                kw = dict(subset='index', take_last=True)
+                kw = dict(subset='index', keep=True)
                 df = df.reset_index().drop_duplicates(**kw).set_index('index')
             kw = dict(method='time', limit=30)
             df = df.reindex(index).interpolate(**kw).ix[index]
