@@ -11,4 +11,4 @@ from .taylor_diagram import *
 # External (legacy code).
 from tardis import *
 
-__version__ = '0.3.0'
+__version__ = '0.4.0'
