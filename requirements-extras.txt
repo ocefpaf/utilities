@@ -1,4 +1,4 @@
-folium
+folium=0.1.6
 oceans
 tardis
 scikit-learn
