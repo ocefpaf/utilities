@@ -469,25 +469,19 @@ def load_secoora_ncs(run_name):
     return Panel.fromDict(dfs).swapaxes(0, 2)
 
 
-def fes_date_filter(start, stop, constraint='overlaps'):
+def fes_date_filter(start, stop):
     """
-    Take datetime-like objects and returns a fes filter for date range.
-    NOTE: Truncates the minutes!!!
+    Take datetime-like objects and returns a fes filter for date range from
+    `start` and `stop` (begin and end inclusive).
 
-    FIXME: Not sure if this is working as expected.
-    @rsignell-usgs what are the expected values for within and overlaps?
+    NOTE: Truncates the minutes!!!
 
     Examples
     --------
     >>> from datetime import datetime, timedelta
     >>> stop = datetime(2010, 1, 1, 12, 30, 59).replace(tzinfo=pytz.utc)
     >>> start = stop - timedelta(days=7)
-    >>> begin, end = fes_date_filter(start, stop, constraint='overlaps')
-    >>> begin.literal, end.literal
-    ('2010-01-01 12:00', '2009-12-25 12:00')
-    >>> begin.propertyoperator, end.propertyoperator
-    ('ogc:PropertyIsLessThanOrEqualTo', 'ogc:PropertyIsGreaterThanOrEqualTo')
-    >>> begin, end = fes_date_filter(start, stop, constraint='within')
+    >>> begin, end = fes_date_filter(start, stop)
     >>> begin.literal, end.literal
     ('2009-12-25 12:00', '2010-01-01 12:00')
     >>> begin.propertyoperator, end.propertyoperator
@@ -496,24 +490,13 @@ def fes_date_filter(start, stop, constraint='overlaps'):
     """
     start = start.strftime('%Y-%m-%d %H:00')
     stop = stop.strftime('%Y-%m-%d %H:00')
-    if constraint == 'overlaps':
-        propertyname = 'apiso:TempExtent_begin'
-        begin = fes.PropertyIsLessThanOrEqualTo(propertyname=propertyname,
-                                                literal=stop)
-        propertyname = 'apiso:TempExtent_end'
-        end = fes.PropertyIsGreaterThanOrEqualTo(propertyname=propertyname,
-                                                 literal=start)
-    elif constraint == 'within':
-        propertyname = 'apiso:TempExtent_begin'
-        begin = fes.PropertyIsGreaterThanOrEqualTo(propertyname=propertyname,
-                                                   literal=start)
-        propertyname = 'apiso:TempExtent_end'
-        end = fes.PropertyIsLessThanOrEqualTo(propertyname=propertyname,
-                                              literal=stop)
-    else:
-        raise NameError('Unrecognized constraint {}'.format(constraint))
+    propertyname = 'apiso:TempExtent_begin'
+    begin = fes.PropertyIsGreaterThanOrEqualTo(propertyname=propertyname,
+                                               literal=start)
+    propertyname = 'apiso:TempExtent_end'
+    end = fes.PropertyIsLessThanOrEqualTo(propertyname=propertyname,
+                                          literal=stop)
     return begin, end
-
 
 def service_urls(records, service='odp:url'):
     """
@@ -586,6 +569,7 @@ def sos_request(url='opendap.co-ops.nos.noaa.gov/ioos-dif-sos/SOS', **kw):
     >>> url = sos_request(uri, **params)
     >>> bool(urlparse(url).scheme)
     True
+
     """
     url = parse_url(url)
     offering = 'urn:ioos:network:NOAA.NOS.CO-OPS:CurrentsActive'
