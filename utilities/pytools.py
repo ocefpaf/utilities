@@ -1,6 +1,5 @@
-from __future__ import division, absolute_import
+from __future__ import absolute_import, division, print_function
 
-# Standard Library.
 import os
 import signal
 import subprocess
@@ -32,7 +31,6 @@ __all__ = ['rot2d',
            'css_styles',
            'to_html',
            'make_map',
-           'inline_map',
            'embed_html',
            'get_coordinates',
            'parse_url',
@@ -85,7 +83,7 @@ def shrink(a, b):
     >>> rand = np.random.rand
     >>> shrink(rand(10, 10), (5, 9, 18)).shape
     (9, 10)
-    >>> map(np.shape, shrink(rand(10, 10, 10), rand(5, 9, 18)))
+    >>> list(map(np.shape, shrink(rand(10, 10, 10), rand(5, 9, 18))))
     [(5, 9, 10), (5, 9, 10)]
 
     """
@@ -212,25 +210,28 @@ def make_map(bbox, **kw):
     True
 
     """
-    from folium import Map
+    import folium
 
     line = kw.pop('line', True)
-    states = kw.pop('states', True)
     layers = kw.pop('layers', True)
     hf_radar = kw.pop('hf_radar', True)
     zoom_start = kw.pop('zoom_start', 5)
-    secoora_stations = kw.pop('secoora_stations', True)
 
     lon, lat = np.array(bbox).reshape(2, 2).mean(axis=0)
-    m = Map(width='100%', height='100%',
-            location=[lat, lon], zoom_start=zoom_start)
+    m = folium.Map(width='100%', height='100%',
+                   location=[lat, lon], zoom_start=zoom_start)
 
     if hf_radar:
-        url = "http://hfrnet.ucsd.edu/thredds/wms/HFRNet/USEGC/6km/hourly/RTV"
-        m.add_wms_layer(wms_name="HF Radar",
-                        wms_url=url,
-                        wms_format="image/png",
-                        wms_layers='surface_sea_water_velocity')
+        url = 'http://hfrnet.ucsd.edu/thredds/wms/HFRNet/USEGC/6km/hourly/RTV'
+        w = folium.WmsTileLayer(url,
+                                name='HF Radar',
+                                format='image/png',
+                                layers='surface_sea_water_velocity',
+                                attr='HFRNet',
+                                overlay=True,
+                                transparent=True)
+
+        w.add_to(m)
 
     if layers:
         add = 'MapServer/tile/{z}/{y}/{x}'
@@ -245,29 +246,24 @@ def make_map(bbox, **kw):
                     Shaded_Relief='World_Shaded_Relief/MapServer',
                     Ocean_Reference='Ocean/World_Ocean_Reference',
                     Navigation_Charts='Specialty/World_Navigation_Charts')
-        for tile_name, url in ESRI.items():
-            tile_url = '{}/{}/{}'.format(base, url, add)
-            m.add_tile_layer(tile_name=tile_name,
-                             tile_url=tile_url)
+        for name, url in ESRI.items():
+            url = '{}/{}/{}'.format(base, url, add)
 
-    m.add_layers_to_map()
-    if line:
-        # Create the map and add the bounding box line.
-        kw = dict(line_color='#FF0000', line_weight=2)
-        m.line(get_coordinates(bbox), **kw)
-    if states:
-        path = 'https://raw.githubusercontent.com/ocefpaf/secoora/factor_map/'
-        path += 'notebooks/secoora.json'
-        m.geo_json(geo_path=path,
-                   fill_color='none', line_color='Orange')
-    if secoora_stations:
-        for x, y, name in zip(df['lon'], df['lat'], df['ID']):
-            if not np.isnan(x) and not np.isnan(y):
-                location = y, x
-                popup = '<b>{}</b>'.format(name)
-                kw = dict(radius=500, fill_color='#3186cc', popup=popup,
-                          fill_opacity=0.2)
-                m.circle_marker(location=location, **kw)
+            w = folium.TileLayer(tiles=url,
+                                 name=name,
+                                 attr='ESRI',
+                                 overlay=True)
+            w.add_to(m)
+
+    if line:  # Create the map and add the bounding box line.
+        p = folium.PolyLine(get_coordinates(bbox),
+                            color='#FF0000',
+                            weight=2,
+                            opacity=0.9,
+                            latlon=True)
+        m.add_children(p)
+
+    m.add_children(folium.LayerControl())
     return m
 
 
@@ -287,38 +283,6 @@ def embed_html(path="mapa.html", width=750, height=500):
             'style="width: {width}px; height: {height}px;'
             'border: none"></iframe>').format
     return HTML(html(path=path, width=width, height=height))
-
-
-def inline_map(m):
-    """
-    Takes a folium instance or a html path and load into an iframe.
-
-    Examples
-    --------
-    >>> import os
-    >>> from IPython.display import HTML, IFrame
-    >>> bbox = [-87.40, 24.25, -74.70, 36.70]
-    >>> m = make_map(bbox)
-    >>> html = inline_map(m)
-    >>> isinstance(html, HTML)
-    True
-    >>> fname = os.path.join('data', 'mapa.html')
-    >>> html = inline_map(fname)
-    >>> isinstance(html, IFrame)
-    True
-
-    """
-    from folium import Map
-    from IPython.display import HTML, IFrame
-    if isinstance(m, Map):
-        m._build_map()
-        srcdoc = m.HTML.replace('"', '&quot;')
-        embed = HTML('<iframe srcdoc="{srcdoc}" '
-                     'style="width: 100%; height: 500px; '
-                     'border: none"></iframe>'.format(srcdoc=srcdoc))
-    elif isinstance(m, str):
-        embed = IFrame(m, width=750, height=500)
-    return embed
 
 
 def get_coordinates(bbox):

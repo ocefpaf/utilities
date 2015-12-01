@@ -1,11 +1,8 @@
-folium=0.1.6
-oceans
-tardis
-scikit-learn
+flake8
+folium
 ipython-notebook
+oceans
+pytest
 qrcode
+requests
 scikit-learn
-# request > 2.5.3 security deps
-pyopenssl
-ndg-httpsclient
-pyasn1
