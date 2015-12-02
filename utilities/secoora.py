@@ -469,11 +469,10 @@ def load_secoora_ncs(run_name):
     return Panel.fromDict(dfs).swapaxes(0, 2)
 
 
-def fes_date_filter(start, stop):
+def fes_date_filter(start, stop, constraint='overlaps'):
     """
-    Take datetime-like objects and returns a fes filter for date range from
-    `start` and `stop` (begin and end inclusive).
-
+    Take datetime-like objects and returns a fes filter for date range
+    (begin and end inclusive).
     NOTE: Truncates the minutes!!!
 
     Examples
@@ -481,7 +480,12 @@ def fes_date_filter(start, stop):
     >>> from datetime import datetime, timedelta
     >>> stop = datetime(2010, 1, 1, 12, 30, 59).replace(tzinfo=pytz.utc)
     >>> start = stop - timedelta(days=7)
-    >>> begin, end = fes_date_filter(start, stop)
+    >>> begin, end = fes_date_filter(start, stop, constraint='overlaps')
+    >>> begin.literal, end.literal
+    ('2010-01-01 12:00', '2009-12-25 12:00')
+    >>> begin.propertyoperator, end.propertyoperator
+    ('ogc:PropertyIsLessThanOrEqualTo', 'ogc:PropertyIsGreaterThanOrEqualTo')
+    >>> begin, end = fes_date_filter(start, stop, constraint='within')
     >>> begin.literal, end.literal
     ('2009-12-25 12:00', '2010-01-01 12:00')
     >>> begin.propertyoperator, end.propertyoperator
@@ -490,13 +494,24 @@ def fes_date_filter(start, stop):
     """
     start = start.strftime('%Y-%m-%d %H:00')
     stop = stop.strftime('%Y-%m-%d %H:00')
-    propertyname = 'apiso:TempExtent_begin'
-    begin = fes.PropertyIsGreaterThanOrEqualTo(propertyname=propertyname,
-                                               literal=start)
-    propertyname = 'apiso:TempExtent_end'
-    end = fes.PropertyIsLessThanOrEqualTo(propertyname=propertyname,
-                                          literal=stop)
+    if constraint == 'overlaps':
+        propertyname = 'apiso:TempExtent_begin'
+        begin = fes.PropertyIsLessThanOrEqualTo(propertyname=propertyname,
+                                                literal=stop)
+        propertyname = 'apiso:TempExtent_end'
+        end = fes.PropertyIsGreaterThanOrEqualTo(propertyname=propertyname,
+                                                 literal=start)
+    elif constraint == 'within':
+        propertyname = 'apiso:TempExtent_begin'
+        begin = fes.PropertyIsGreaterThanOrEqualTo(propertyname=propertyname,
+                                                   literal=start)
+        propertyname = 'apiso:TempExtent_end'
+        end = fes.PropertyIsLessThanOrEqualTo(propertyname=propertyname,
+                                              literal=stop)
+    else:
+        raise NameError('Unrecognized constraint {}'.format(constraint))
     return begin, end
+
 
 def service_urls(records, service='odp:url'):
     """
