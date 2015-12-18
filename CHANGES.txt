@@ -1,6 +1,11 @@
 Changelog
 ---------
 
+Version 0.4.1
+
+* Fix bug in simpler `fes_date_filter()` and re-introduced the `overlaps` and
+  `within` searches.
+
 Version 0.4.0
 
 * Simpler `fes_date_filter()`.
