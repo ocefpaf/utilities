@@ -383,6 +383,107 @@ def is_station(url):
     return station
 
 
+def _load_nc(nc):
+    if isinstance(nc, Dataset):
+        return nc
+    else:
+        return Dataset(nc)
+
+
+def source_of_data(nc, coverage_content_type='modelResult'):
+    """
+    Check if the `coverage_content_type` of the cude.
+    The `coverage_content_type` is an ISO 19115-1 code to indicating the
+    source of the data types and can be one of the following:
+
+    image, thematicClassification, physicalMeasurement, auxiliaryInformation,
+    qualityInformation, referenceInformation, modelResult, coordinate
+
+    Examples
+    --------
+    >>> url = ('http://comt.sura.org/thredds/dodsC/data/comt_1_archive/'
+    ...        'inundation_tropical/VIMS_SELFE/'
+    ...        'Hurricane_Ike_2D_final_run_without_waves')
+    >>> nc = Dataset(url)
+    >>> source_of_data(nc)
+    True
+    >>> url = ('http://thredds.axiomdatascience.com/thredds/'
+    ...        'dodsC/G1_SST_GLOBAL.nc')
+    >>> source_of_data(url)  # False positive!
+    True
+
+    OBS: `source_of_data` assumes that the presence of one
+    coverage_content_type` variable means the whole Dataset **is** the same
+    `coverage_content_type`!
+
+    """
+    nc = _load_nc(nc)
+    if nc.get_variables_by_attributes(coverage_content_type=coverage_content_type):  # noqa
+        return True
+    return False
+
+
+def is_model(nc):
+    """
+    Heuristic way to find if a netCDF4 object is "modelResult" or not.
+    WARNING: This function may return False positives and False
+    negatives!!!
+
+    Examples
+    --------
+    >>> models = ['http://omgsrv1.meas.ncsu.edu:8080/thredds/dodsC/fmrc/sabgom/SABGOM_Forecast_Model_Run_Collection_best.ncd',
+    ...           'http://crow.marine.usf.edu:8080/thredds/dodsC/FVCOM-Nowcast-Agg.nc',
+    ...           'http://geoport.whoi.edu/thredds/dodsC/coawst_4/use/fmrc/coawst_4_use_best.ncd',
+    ...           'http://oos.soest.hawaii.edu/thredds/dodsC/hioos/tide_pac',
+    ...           'http://opendap.co-ops.nos.noaa.gov/thredds/dodsC/TBOFS/fmrc/Aggregated_7_day_TBOFS_Fields_Forecast_best.ncd',
+    ...           'http://oos.soest.hawaii.edu/thredds/dodsC/pacioos/hycom/global',
+    ...           'http://opendap.co-ops.nos.noaa.gov/thredds/dodsC/CBOFS/fmrc/Aggregated_7_day_CBOFS_Fields_Forecast_best.ncd',
+    ...           'http://geoport-dev.whoi.edu/thredds/dodsC/estofs/atlantic',
+    ...           'http://www.smast.umassd.edu:8080/thredds/dodsC/FVCOM/NECOFS/Forecasts/NECOFS_WAVE_FORECAST.nc',
+    ...           'http://www.smast.umassd.edu:8080/thredds/dodsC/FVCOM/NECOFS/Forecasts/NECOFS_GOM3_FORECAST.nc']
+    >>> all([is_model(url) for url in models])
+    True
+    >>> not_model = ['http://thredds.cdip.ucsd.edu/thredds/dodsC/cdip/archive/043p1/043p1_d17.nc',
+    ...              'http://thredds.axiomalaska.com/thredds/dodsC/Aquarius_V3_SSS_Daily.nc',
+    ...              'http://thredds.axiomalaska.com/thredds/dodsC/Aquarius_V3_scat_wind_speed_Weekly.nc',
+    ...              'http://thredds.axiomdatascience.com/thredds/dodsC/G1_SST_GLOBAL.nc']
+    >>> any([is_model(url) for url in not_model])
+    False
+
+    """
+    nc = _load_nc(nc)
+
+    # First criteria (Strong): `UGRID/SGRID`
+    if hasattr(nc, 'Conventions'):
+        if 'ugrid' in nc.Conventions.lower():
+            return True
+    if hasattr(nc, 'Conventions'):
+        if 'sgrid' in nc.Conventions.lower():
+            return True
+    # Second criteria (Strong): dimensionless coords are present.
+    vs = nc.get_variables_by_attributes(formula_terms=lambda v: v is not None)
+    if vs:
+        return True
+    # Third criteria (weak): Assumes that all "GRID" attribute are models.
+    cdm_data_type = nc.getncattr('cdm_data_type') if hasattr(nc, 'cdm_data_type') else ''  # noqa
+    feature_type = nc.getncattr('featureType') if hasattr(nc, 'featureType') else ''  # noqa
+
+    grid, keyword, title = False, False, False
+
+    grid = any([info.lower() == 'grid' for info in [cdm_data_type, feature_type]])  # noqa
+
+    words = ['pom', 'hycom', 'fvcom', 'roms', 'numerical',
+             'simulation', 'Circulation Models']
+    if hasattr(nc, 'keywords'):
+        keyword = any(word in nc.getncattr('keywords') for word in words)
+    if hasattr(nc, 'title'):
+        title = any(word in nc.getncattr('title') for word in words)
+
+    if any([title, keyword]) and grid:
+        return True
+    return False
+
+
 def secoora_buoys():
     """
     Returns a generator with secoora catalog_platforms URLs.
