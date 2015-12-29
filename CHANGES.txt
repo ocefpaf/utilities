@@ -1,6 +1,10 @@
 Changelog
 ---------
 
+Version 0.4.2
+
+* Faster `is_model`. (Bypass iris cube creation.)
+
 Version 0.4.1
 
 * Fix bug in simpler `fes_date_filter()` and re-introduced the `overlaps` and
