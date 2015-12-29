@@ -561,7 +561,7 @@ def collector2table(collector):
     g = df.groupby('station')
     df = dict()
     for station in g.groups.keys():
-        df.update({station: g.get_group(station).irow(0)})
+        df.update({station: g.get_group(station).iloc[0]})
     return DataFrame.from_dict(df).T
 
 
