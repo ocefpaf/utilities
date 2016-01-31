@@ -3,8 +3,7 @@ Utility functions for IOOS notebooks.
 
 """
 
-from __future__ import division
-
+from __future__ import absolute_import, division, print_function
 
 import requests
 from datetime import datetime, timedelta

@@ -1,6 +1,6 @@
+beautifulsoup4
 iris
 lxml
+matplotlib
 pandas
 requests
-matplotlib
-beautifulsoup4

@@ -1,6 +1,5 @@
-from __future__ import division, absolute_import
+from __future__ import absolute_import, division, print_function
 
-# Standard Library.
 import os
 import copy
 import fnmatch
@@ -26,9 +25,8 @@ from owslib.swe.sensor.sml import SensorML
 from pandas import Panel, DataFrame, read_csv, concat
 from netCDF4 import Dataset, MFDataset, date2index, num2date
 
-import cf_units
 import iris
-from iris.pandas import as_data_frame, as_cube
+from iris.pandas import as_data_frame
 
 import requests
 from lxml import etree
@@ -59,7 +57,6 @@ __all__ = ['get_model_name',
            'fix_url',
            'fetch_range',
            'start_log',
-           'save_timeseries',
            'is_station']
 
 
@@ -493,7 +490,10 @@ def secoora_buoys():
     Examples
     ---------
     >>> import types
-    >>> from urlparse import urlparse
+    >>> try:
+    ...     from urlparse import urlparse
+    ... except ImportError:
+    ...     from urllib.parse import urlparse
     >>> buoys = secoora_buoys()
     >>> isinstance(buoys, types.GeneratorType)
     True
@@ -672,7 +672,10 @@ def sos_request(url='opendap.co-ops.nos.noaa.gov/ioos-dif-sos/SOS', **kw):
     """
     Examples
     --------
-    >>> from urlparse import urlparse
+    >>> try:
+    ...     from urlparse import urlparse
+    ... except ImportError:
+    ...     from urllib.parse import urlparse
     >>> from datetime import date, datetime, timedelta
     >>> today = date.today().strftime("%Y-%m-%d")
     >>> start = datetime.strptime(today, "%Y-%m-%d") - timedelta(7)
@@ -712,10 +715,10 @@ def get_ndbc_longname(station):
 
     Examples
     --------
-    >>> get_ndbc_longname(31005)
-    u'Sw Extension'
-    >>> get_ndbc_longname(44013)
-    u'Boston 16 Nm East Of Boston'
+    >>> str(get_ndbc_longname(31005))
+    'Sw Extension'
+    >>> str(get_ndbc_longname(44013))
+    'Boston 16 Nm East Of Boston'
 
     """
     url = "http://www.ndbc.noaa.gov/station_page.php"
@@ -930,52 +933,6 @@ def start_log(start, stop, bbox):
     log.info('owslib version: {}'.format(owslib.__version__))
     log.info('pyoos version: {}'.format(pyoos.__version__))
     return log
-
-
-def save_timeseries(df, outfile, standard_name, **kw):
-    """
-    http://cfconventions.org/Data/cf-convetions/cf-conventions-1.6/build/cf-conventions.html#idp5577536
-
-    """
-    cube = as_cube(df, calendars={1: cf_units.CALENDAR_GREGORIAN})
-    cube.coord("index").rename("time")
-
-    # Cast all station names to strings and renamed it.
-    columns = cube.coord('columns').points.astype(str).tolist()
-    cube.coord('columns').points = columns
-    cube.coord("columns").rename("station name")
-    cube.rename(standard_name)
-    cube.coord("station name").var_name = 'station'
-
-    longitude = kw.get("longitude")
-    latitude = kw.get("latitude")
-    if longitude is not None:
-        longitude = iris.coords.AuxCoord(np.float_(longitude),
-                                         var_name="lon",
-                                         standard_name="longitude",
-                                         long_name="station longitude",
-                                         units=cf_units.Unit("degrees"))
-        cube.add_aux_coord(longitude, data_dims=1)
-
-    if latitude is not None:
-        latitude = iris.coords.AuxCoord(np.float_(latitude),
-                                        var_name="lat",
-                                        standard_name="latitude",
-                                        long_name="station latitude",
-                                        units=cf_units.Unit("degrees"))
-        cube.add_aux_coord(latitude, data_dims=1)
-
-    cube.units = kw.get('units')
-
-    station_attr = kw.get("station_attr")
-    if station_attr is not None:
-        cube.coord("station name").attributes.update(station_attr)
-
-    cube_attr = kw.get("cube_attr")
-    if cube_attr is not None:
-        cube.attributes.update(cube_attr)
-
-    iris.save(cube, outfile)
 
 if __name__ == '__main__':
     import doctest
