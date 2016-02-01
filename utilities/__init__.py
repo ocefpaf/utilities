@@ -19,8 +19,14 @@ from .secoora import (get_model_name, secoora2df, secoora_buoys,
 from .skill_score import (both_valid, mean_bias, median_bias, rmse, r2,
                           apply_skill, low_pass)
 from .taylor_diagram import TaylorDiagram
+from .tardis import (is_model, z_coord, get_surface, time_coord, time_near,
+                     time_slice, bbox_extract_2Dcoords, bbox_extract_1Dcoords,
+                     subset, quick_load_cubes, proc_cube, add_mesh,
+                     ensure_timeseries, add_station, remove_ssh,
+                     save_timeseries, make_tree, is_water, get_nearest_series,
+                     get_nearest_water)
 
-__version__ = '0.4.2'
+__version__ = '0.5.0'
 
 __all__ = ['buildSFOUrls',
            'findSFOIndexs',
@@ -83,4 +89,25 @@ __all__ = ['buildSFOUrls',
            'r2',
            'apply_skill',
            'low_pass',
-           'TaylorDiagram']
+           'TaylorDiagram',
+           'is_model',
+           'z_coord',
+           'get_surface',
+           'time_coord',
+           'time_near',
+           'time_slice',
+           'bbox_extract_2Dcoords',
+           'bbox_extract_1Dcoords',
+           'subset',
+           'quick_load_cubes',
+           'proc_cube',
+           'add_mesh',
+           'ensure_timeseries',
+           'add_station',
+           'remove_ssh',
+           'save_timeseries',
+           'make_tree',
+           'is_water',
+           'get_nearest_series',
+           'get_nearest_water',
+           ]

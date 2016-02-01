@@ -1,9 +1,11 @@
 Changelog
 ---------
 
-Version 0.4.2
+Version 0.5.0
 
 * Faster `is_model`. (Bypass iris cube creation.)
+* Using folium `v0.2.0` for maps
+* Re-incorporated tardis.py functions
 
 Version 0.4.1
 
