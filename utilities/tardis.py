@@ -6,6 +6,7 @@ import numpy as np
 import numpy.ma as ma
 from scipy.spatial import cKDTree as KDTree
 
+import cf_units
 import iris
 from iris import Constraint
 from iris.cube import CubeList
@@ -545,7 +546,7 @@ def remove_ssh(cube):
 def save_timeseries(df, outfile, standard_name, **kw):
     """http://cfconventions.org/Data/cf-convetions/cf-conventions-1.6/build
     /cf-conventions.html#idp5577536"""
-    cube = as_cube(df, calendars={1: iris.unit.CALENDAR_GREGORIAN})
+    cube = as_cube(df, calendars={1: cf_units.CALENDAR_GREGORIAN})
     cube.coord("index").rename("time")
 
     # Cast all station names to strings and renamed it.
@@ -562,7 +563,7 @@ def save_timeseries(df, outfile, standard_name, **kw):
                                          var_name="lon",
                                          standard_name="longitude",
                                          long_name="station longitude",
-                                         units=iris.unit.Unit("degrees"))
+                                         units=cf_units.Unit("degrees"))
         cube.add_aux_coord(longitude, data_dims=1)
 
     if latitude is not None:
@@ -570,7 +571,7 @@ def save_timeseries(df, outfile, standard_name, **kw):
                                         var_name="lat",
                                         standard_name="latitude",
                                         long_name="station latitude",
-                                        units=iris.unit.Unit("degrees"))
+                                        units=cf_units.Unit("degrees"))
         cube.add_aux_coord(latitude, data_dims=1)
 
     cube.units = kw.get('units')
