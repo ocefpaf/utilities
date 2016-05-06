@@ -796,7 +796,8 @@ def pyoos2df(collector, station_id, df_name=None):
         df = ndbc2df(collector, station_id)
     # FIXME: Workaround to get only 1 sensor.
     df = df.reset_index()
-    df = df.drop_duplicates(cols='date_time').set_index('date_time')
+    kw = dict(subset='date_time', keep='last')
+    df = df.drop_duplicates(**kw).set_index('date_time')
     if df_name:
         df.name = df_name
     return df
@@ -896,24 +897,22 @@ def _reload_log():
     return log
 
 
-def start_log(start, stop, bbox):
+def start_log(start, stop, bbox, log_name):
     log = _reload_log()
     import os
     import pyoos
     import owslib
 
-    run_name = '{:%Y-%m-%d}'.format(stop)
-
-    if not os.path.exists(run_name):
-        os.makedirs(run_name)
-        msg = 'Saving data inside directory {}'.format(run_name)
+    if not os.path.exists(log_name):
+        os.makedirs(log_name)
+        msg = 'Saving data inside directory {}'.format(log_name)
     else:
-        msg = 'Overwriting the data inside directory {}'.format(run_name)
+        msg = 'Overwriting the data inside directory {}'.format(log_name)
 
     fmt = '{:*^64}'.format
     log.captureWarnings(True)
     LOG_FILENAME = 'log.txt'
-    LOG_FILENAME = os.path.join(run_name, LOG_FILENAME)
+    LOG_FILENAME = os.path.join(log_name, LOG_FILENAME)
     log.basicConfig(filename=LOG_FILENAME,
                     filemode='w',
                     format='%(asctime)s %(levelname)s: %(message)s',
