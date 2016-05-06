@@ -112,7 +112,7 @@ def is_spike(series, window_size=3, threshold=3, scale=True):
     1980-01-25    43.5
     dtype: float64
     >>> series[is_spike(series, window_size=3, threshold=3, scale=True)]
-    1980-01-22    90
+    1980-01-22    90.0
     Freq: D, dtype: float64
 
     """
@@ -245,7 +245,7 @@ def tukey53H(series, k=1.5):
     >>> series = Series(series, index=date_range('1980-01-19',
     ...                 periods=len(series)))
     >>> series[tukey53H(series, k=1.5)]
-    1980-01-22    90
+    1980-01-22    90.0
     Freq: D, dtype: float64
 
     """
