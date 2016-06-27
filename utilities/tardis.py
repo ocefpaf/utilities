@@ -174,10 +174,12 @@ def get_surface(cube):
     True
 
     """
+    conventions = cube.attributes.get('Conventions', 'None')
+
     idx = _get_surface_idx(cube)
-    if cube.ndim == 4:
+    if cube.ndim == 4 or 'UGRID' in conventions.upper():
         return cube[:, int(idx), ...]
-    elif cube.ndim == 3:
+    elif cube.ndim == 3 and 'UGRID' not in conventions.upper():
         return cube[int(idx), ...]
     else:
         msg = "Cannot find the surface for cube {!r}".format
