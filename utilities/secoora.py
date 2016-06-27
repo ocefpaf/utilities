@@ -125,66 +125,23 @@ CF_names = dict({'salinity': salinity,
                  'currents': dict(u=u, v=v, speed_direction=speed_direction),
                  'water_surface_height_above_reference_datum': water_level})
 
-CSW = {'COMT':
-       'comt.sura.org:8000',
-       'NGDC Geoportal':
-       'http://www.ngdc.noaa.gov/geoportal/csw',
-       'USGS WHSC Geoportal':
-       'http://geoport.whoi.edu/geoportal/csw',
-       'NODC Geoportal: granule level':
-       'http://www.nodc.noaa.gov/geoportal/csw',
-       'NODC Geoportal: collection level':
-       'http://data.nodc.noaa.gov/geoportal/csw',
-       'NRCAN CUSTOM':
-       'http://geodiscover.cgdi.ca/wes/serviceManagerCSW/csw',
-       'USGS Woods Hole GI_CAT':
-       'http://geoport.whoi.edu/gi-cat/services/cswiso',
-       'USGS CIDA Geonetwork':
-       'http://cida.usgs.gov/gdp/geonetwork/srv/en/csw',
-       'USGS Coastal and Marine Program':
-       'http://cmgds.marine.usgs.gov/geonetwork/srv/en/csw',
-       'USGS Woods Hole Geoportal':
-       'http://geoport.whoi.edu/geoportal/csw',
-       'CKAN testing site for new Data.gov':
-       'http://geo.gov.ckan.org/csw',
-       'EPA':
-       'https://edg.epa.gov/metadata/csw',
-       'CWIC':
-       'http://cwic.csiss.gmu.edu/cwicv1/discovery'}
 
-titles = dict(SABGOM='http://omgsrv1.meas.ncsu.edu:8080/thredds/dodsC/fmrc/'
-              'sabgom/SABGOM_Forecast_Model_Run_Collection_best.ncd',
-              SABGOM_ARCHIVE='http://omgarch1.meas.ncsu.edu:8080/thredds/'
-              'dodsC/fmrc/sabgom/'
-              'SABGOM_Forecast_Model_Run_Collection_best.ncd',
-              USEAST='http://omgsrv1.meas.ncsu.edu:8080/thredds/dodsC/fmrc/'
-              'us_east/US_East_Forecast_Model_Run_Collection_best.ncd',
-              COAWST_4='http://geoport.whoi.edu/thredds/dodsC/coawst_4/use/'
-              'fmrc/coawst_4_use_best.ncd',
-              ESPRESSO='http://tds.marine.rutgers.edu/thredds/dodsC/roms/'
-              'espresso/2013_da/his_Best/'
-              'ESPRESSO_Real-Time_v2_History_Best_Available_best.ncd',
-              BTMPB='http://oos.soest.hawaii.edu/thredds/dodsC/hioos/tide_pac',
-              TBOFS='http://opendap.co-ops.nos.noaa.gov/thredds/dodsC/TBOFS/'
-              'fmrc/Aggregated_7_day_TBOFS_Fields_Forecast_best.ncd',
-              HYCOM='http://oos.soest.hawaii.edu/thredds/dodsC/pacioos/hycom/'
-              'global',
-              CBOFS='http://opendap.co-ops.nos.noaa.gov/thredds/dodsC/CBOFS/'
-              'fmrc/Aggregated_7_day_CBOFS_Fields_Forecast_best.ncd',
-              ESTOFS='http://geoport-dev.whoi.edu/thredds/dodsC/estofs/'
-              'atlantic',
-              NECOFS_GOM3_FVCOM='http://www.smast.umassd.edu:8080/thredds/'
-              'dodsC/FVCOM/NECOFS/Forecasts/NECOFS_GOM3_FORECAST.nc',
-              NECOFS_GOM3_WAVE='http://www.smast.umassd.edu:8080/thredds/dodsC'
-              '/FVCOM/NECOFS/Forecasts/NECOFS_WAVE_FORECAST.nc',
-              USF_ROMS='http://crow.marine.usf.edu:8080/thredds/dodsC/'
-              'WFS_ROMS_NF_model/USF_Ocean_Circulation_Group_West_Florida_'
-              'Shelf_Daily_ROMS_Nowcast_Forecast_Model_Data_best.ncd',
-              USF_SWAN='http://crow.marine.usf.edu:8080/thredds/dodsC/'
-              'WFS_SWAN_NF_model/USF_Ocean_Circulation_Group_West_Florida_'
-              'Shelf_Daily_SWAN_Nowcast_Forecast_Wave_Model_Data_best.ncd',
-              USF_FVCOM='http://crow.marine.usf.edu:8080/thredds/dodsC/'
-              'FVCOM-Nowcast-Agg.nc')
+titles = dict(SABGOM='http://omgsrv1.meas.ncsu.edu:8080/thredds/dodsC/fmrc/sabgom/SABGOM_Forecast_Model_Run_Collection_best.ncd',  # noqa
+              SABGOM_ARCHIVE='http://omgarch1.meas.ncsu.edu:8080/thredds/dodsC/fmrc/sabgom/SABGOM_Forecast_Model_Run_Collection_best.ncd',  # noqa
+              USEAST='http://omgsrv1.meas.ncsu.edu:8080/thredds/dodsC/fmrc/us_east/US_East_Forecast_Model_Run_Collection_best.ncd',  # noqa
+              COAWST_4='http://geoport.whoi.edu/thredds/dodsC/coawst_4/use/fmrc/coawst_4_use_best.ncd',  # noqa
+              ESPRESSO='http://tds.marine.rutgers.edu/thredds/dodsC/roms/espresso/2013_da/his_Best/ESPRESSO_Real-Time_v2_History_Best_Available_best.ncd',  # noqa
+              BTMPB='http://oos.soest.hawaii.edu/thredds/dodsC/hioos/tide_pac',  # noqa
+              TBOFS='http://opendap.co-ops.nos.noaa.gov/thredds/dodsC/TBOFS/fmrc/Aggregated_7_day_TBOFS_Fields_Forecast_best.ncd',  # noqa
+              HYCOM='http://oos.soest.hawaii.edu/thredds/dodsC/pacioos/hycom/global',  # noqa
+              CBOFS='http://opendap.co-ops.nos.noaa.gov/thredds/dodsC/CBOFS/fmrc/Aggregated_7_day_CBOFS_Fields_Forecast_best.ncd',  # noqa
+              ESTOFS='http://geoport-dev.whoi.edu/thredds/dodsC/estofs/atlantic',  # noqa
+              NECOFS_GOM3_FVCOM='http://www.smast.umassd.edu:8080/thredds/dodsC/FVCOM/NECOFS/Forecasts/NECOFS_GOM3_FORECAST.nc',  # noqa
+              NECOFS_GOM3_WAVE='http://www.smast.umassd.edu:8080/thredds/dodsC/FVCOM/NECOFS/Forecasts/NECOFS_WAVE_FORECAST.nc',  # noqa
+              USF_ROMS='http://crow.marine.usf.edu:8080/thredds/dodsC/WFS_ROMS_NF_model/USF_Ocean_Circulation_Group_West_Florida_Shelf_Daily_ROMS_Nowcast_Forecast_Model_Data_best.ncd',  # noqa
+              USF_SWAN='http://crow.marine.usf.edu:8080/thredds/dodsC/WFS_SWAN_NF_model/USF_Ocean_Circulation_Group_West_Florida_Shelf_Daily_SWAN_Nowcast_Forecast_Wave_Model_Data_best.ncd',  # noqa
+              USF_FVCOM='http://crow.marine.usf.edu:8080/thredds/dodsC/FVCOM-Nowcast-Agg.nc'  # noqa
+              )
 
 
 def fix_url(start, url):
@@ -616,21 +573,23 @@ def fes_date_filter(start, stop, constraint='overlaps'):
     return begin, end
 
 
-def service_urls(records, service='odp:url'):
+def service_urls(records, services):
     """
     Extract service_urls of a specific type (DAP, SOS) from csw records.
+    Example: services=['urn:x-esri:specification:ServiceType:odp:url']
+
+    For more strings check:
+    https://raw.githubusercontent.com/OSGeo/Cat-Interop/master/LinkPropertyLookupTable.csv
 
     """
-    service_string = 'urn:x-esri:specification:ServiceType:' + service
     urls = []
-    for key, rec in records.items():
-        # Create a generator object, and iterate through it until the match is
-        # found if not found, gets the default value (here "none").
-        url = next((d['url'] for d in rec.references if
-                    d['scheme'] == service_string), None)
-        if url is not None:
-            urls.append(url)
-    urls = sorted(set(urls))
+    for service in services:
+        for key, rec in records.items():
+            url = next((d['url'] for d in rec.references if
+                        d['scheme'] == service), None)
+            if url is not None:
+                urls.append(url)
+        urls = sorted(set(urls))
     return urls
 
 
