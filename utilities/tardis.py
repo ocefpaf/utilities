@@ -174,10 +174,12 @@ def get_surface(cube):
     True
 
     """
+    conventions = cube.attributes.get('Conventions', 'None')
+
     idx = _get_surface_idx(cube)
-    if cube.ndim == 4:
+    if cube.ndim == 4 or 'UGRID' in conventions.upper():
         return cube[:, int(idx), ...]
-    elif cube.ndim == 3:
+    elif cube.ndim == 3 and 'UGRID' not in conventions.upper():
         return cube[int(idx), ...]
     else:
         msg = "Cannot find the surface for cube {!r}".format
@@ -434,10 +436,11 @@ def proc_cube(cube, bbox=None, time=None, constraint=None, units=None):
     --------
     >>> import pytz
     >>> import iris
-    >>> from datetime import datetime, timedelta
-    >>> url = ('http://omgarch1.meas.ncsu.edu:8080/thredds/dodsC/fmrc/sabgom/'
+    >>> from datetime import date, datetime, timedelta
+    >>> url = ('http://omgsrv1.meas.ncsu.edu:8080/thredds/dodsC/fmrc/sabgom/'
     ...        'SABGOM_Forecast_Model_Run_Collection_best.ncd')
-    >>> stop = datetime(2014, 7, 7, 12)
+    >>> today = date.today().timetuple()
+    >>> stop = datetime(today.tm_year, today.tm_mon, today.tm_mday, 12)
     >>> start = stop - timedelta(days=7)
     >>> bbox = [-87.40, 24.25, -74.70, 36.70]
     >>> name_list = ['sea_water_potential_temperature']
