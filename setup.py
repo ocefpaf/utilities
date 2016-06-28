@@ -1,5 +1,6 @@
 import os
 import sys
+import versioneer
 from setuptools import setup
 from setuptools.command.test import test as TestCommand
 
@@ -24,18 +25,6 @@ def read(*parts):
     return open(os.path.join(rootpath, *parts), 'r').read()
 
 
-def extract_version():
-    version = None
-    fname = os.path.join(rootpath, 'utilities', '__init__.py')
-    with open(fname) as f:
-        for line in f:
-            if (line.startswith('__version__')):
-                _, version = line.split('=')
-                version = version.strip()[1:-1]  # Remove quotation characters.
-                break
-    return version
-
-
 email = "ocefpaf@gmail.com"
 maintainer = "Filipe Fernandes"
 authors = ['Rich Signell', 'Filipe Fernandes']
@@ -51,7 +40,7 @@ install_requires = [t.strip() for t in tests_require]
 
 
 setup(name='utilities',
-      version=extract_version(),
+      version=versioneer.get_version(),
       packages=['utilities'],
       package_data={'': ['data/*.csv', 'data/*.css']},
       cmdclass=dict(test=PyTest),

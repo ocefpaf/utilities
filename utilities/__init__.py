@@ -1,6 +1,5 @@
 from __future__ import absolute_import, division, print_function
 
-
 from .ioos import (buildSFOUrls, findSFOIndexs, uv2ws, uv2wd, isDataValid,
                    cycleAndGetData, find_nearest, processStationInfo,
                    coopsCurrentRequest, ndbcSOSRequest, get_hr_radar_dap_data,
@@ -26,7 +25,9 @@ from .tardis import (is_model, z_coord, get_surface, time_coord, time_near,
                      save_timeseries, make_tree, is_water, get_nearest_series,
                      get_nearest_water)
 
-__version__ = '0.5.0'
+from ._version import get_versions
+__version__ = get_versions()['version']
+del get_versions
 
 __all__ = ['buildSFOUrls',
            'findSFOIndexs',
